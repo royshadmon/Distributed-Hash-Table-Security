@@ -8,7 +8,7 @@ public interface ChordNode<RESOURCE_TYPE> {
 
     int getId();
 
-    void join(ChordNode<RESOURCE_TYPE> helper);
+    void join(ChordNode helper);
     void leave();
 
     ChordNode find(int keyId);

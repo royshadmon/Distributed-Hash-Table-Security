@@ -9,9 +9,9 @@ import java.util.List;
 public class Node<RESOURCE_TYPE> implements ChordNode<RESOURCE_TYPE> {
 
     private int nodeId;
-    private Node predecessor;
-    private FingerTable table;
-    private List<ChordEntry<Integer, RESOURCE_TYPE>> entries;
+    protected Node predecessor;
+    protected FingerTable table;
+    protected List<ChordEntry<Integer, RESOURCE_TYPE>> entries;
 
     /* Used for printing node's during lookup */
     private static boolean DEBUG = false;
@@ -42,7 +42,7 @@ public class Node<RESOURCE_TYPE> implements ChordNode<RESOURCE_TYPE> {
      *
      * @throws RuntimeException Cannot join from the same node.
      */
-    public void join(ChordNode<RESOURCE_TYPE> helper) {
+    public void join(ChordNode helper) {
         if (helper == null) this.initNetwork();
         else {
             if (helper.equals(this)) throw new RuntimeException("Cannot join using same node");
@@ -61,9 +61,9 @@ public class Node<RESOURCE_TYPE> implements ChordNode<RESOURCE_TYPE> {
      * @param help is the bootstrapper node. The node that is joining uses network state information
      *               provided by the bootstrapper node to populate its finger tables.
      */
-    protected void initFingerTable(ChordNode<RESOURCE_TYPE> help) {
+    private void initFingerTable(ChordNode help) {
 
-        Node<RESOURCE_TYPE> helper = (Node<RESOURCE_TYPE>) help;
+        Node helper = (Node) help;
         this.put(1, (Node) helper.findSuccessor(this.computeStart(1)));
 
         this.predecessor = this.getSuccessor().predecessor;
@@ -157,7 +157,7 @@ public class Node<RESOURCE_TYPE> implements ChordNode<RESOURCE_TYPE> {
 
         for (Node node : activeNodes) {
             for (int i = 1; i <= FingerTable.MAX_ENTRIES; i++) {
-                Node succ = (Node<RESOURCE_TYPE>) this.findSuccessor(node.computeStart(i));
+                Node succ = (Node) this.findSuccessor(node.computeStart(i));
                 if (succ.getId() == this.getId()) {
                     succ = this.getSuccessor();
                 }
@@ -212,7 +212,7 @@ public class Node<RESOURCE_TYPE> implements ChordNode<RESOURCE_TYPE> {
         System.out.println("Nodes.Node's involved in Find operation for key " + keyId + " are: ");
 
         int key = ChordNode.hash(keyId);
-        Node<RESOURCE_TYPE> node = (Node<RESOURCE_TYPE> ) this.findSuccessor(key);
+        Node node = (Node) this.findSuccessor(key);
 
         System.out.println("--------------------------------------------------");
 
@@ -220,7 +220,7 @@ public class Node<RESOURCE_TYPE> implements ChordNode<RESOURCE_TYPE> {
 
 
         for (int i=0; i < node.entries.size(); i++) {
-
+            @SuppressWarnings("unchecked")
             ChordEntry<Integer, RESOURCE_TYPE> entry = (ChordEntry<Integer, RESOURCE_TYPE>) (node.entries.get(0));
             if (entry.getKey() == key) return node;
         }
@@ -278,14 +278,13 @@ public class Node<RESOURCE_TYPE> implements ChordNode<RESOURCE_TYPE> {
      * This function is called when a new node joins, and transfers keys to the node (this node) joining the network.
      *
      */
-    @SuppressWarnings("unchecked")
     protected void migrateEntries() {
         // 1. This function should find the successor of the node, from the finger table,
         // 2. Update the successor's key set to remove keys it should no longer manage.
         // 3. Add those keys to this node's key set
 
         // Should work even when there are no keys in the system
-
+        @SuppressWarnings("unchecked")
         List<ChordEntry<Integer, RESOURCE_TYPE>> newEntries = this.getSuccessor().updateEntries(this.getId());
 
         if (newEntries.size() != 0) {

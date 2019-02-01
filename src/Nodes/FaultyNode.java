@@ -15,21 +15,18 @@ public class FaultyNode<RESOURCE_TYPE> extends Node <RESOURCE_TYPE> {
 
     @Override
     public void leave() {
-
+        this.entries = null;
+        this.predecessor = null;
+        this.table = null;
     }
 
     @Override
-    protected ChordNode<RESOURCE_TYPE> findSuccessor(int keyId) {
+    protected ChordNode findSuccessor(int keyId) {
         return null;
     }
 
     @Override
-    protected ChordNode<RESOURCE_TYPE> findPredecessor(int keyId) {
+    protected ChordNode findPredecessor(int keyId) {
         return null;
-    }
-
-    @Override
-    protected void initFingerTable(ChordNode<RESOURCE_TYPE> helper) {
-
     }
 }
