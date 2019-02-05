@@ -1,18 +1,22 @@
+package Nodes;
+
+import API.ChordNode;
+
 import java.util.LinkedHashMap;
 
-class FingerTable {
+public class FingerTable {
     private int hostNodeId;
 
     static final int MAX_ENTRIES = 8;
 
-    static final int MAX_NODES = (int) (Math.pow(2, MAX_ENTRIES));
-    private LinkedHashMap<Integer, Node> fingerTable = new LinkedHashMap<>();
+    public static final int MAX_NODES = (int) (Math.pow(2, MAX_ENTRIES));
+    private LinkedHashMap<Integer, ChordNode> fingerTable = new LinkedHashMap<>();
 
     FingerTable(Integer hostNodeId) {
         this.hostNodeId = hostNodeId;
     }
 
-    public Node get(Integer entryNumber) {
+    ChordNode get(Integer entryNumber) {
         if (entryNumber == 0) throw new RuntimeException("Entries start from 1");
         if (entryNumber > MAX_ENTRIES) throw new RuntimeException("Exceeded number of entries. " +
                 "Only " + MAX_ENTRIES + " entries are allowed.");
@@ -21,7 +25,7 @@ class FingerTable {
         return this.fingerTable.get(key);
     }
 
-    public void put(Integer entryNumber, Node node) {
+    void put(Integer entryNumber, ChordNode node) {
         if (entryNumber == 0) throw new RuntimeException("Entries start from 1");
         if (entryNumber > MAX_ENTRIES) throw new RuntimeException("Exceeded number of entries. " +
                 "Only " + MAX_ENTRIES + " entries are allowed.");
@@ -30,7 +34,7 @@ class FingerTable {
         this.fingerTable.put(key, node);
     }
 
-    public void prettyPrint() {
+    void prettyPrint() {
         if (this.fingerTable.size() > 0) {
             System.out.println("-------------------------");
             System.out.println("Finger Table - Node " + this.hostNodeId);
