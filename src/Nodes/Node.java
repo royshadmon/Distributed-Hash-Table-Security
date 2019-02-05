@@ -1,6 +1,7 @@
 package Nodes;
 
 import API.ChordNode;
+import API.ChordTracker;
 import Nodes.Resource.ChordEntry;
 
 import java.util.ArrayList;
@@ -8,6 +9,7 @@ import java.util.List;
 
 public class Node<RESOURCE_TYPE> implements ChordNode<RESOURCE_TYPE> {
 
+    private ChordTracker tracker;
     private int nodeId;
     protected Node predecessor;
     protected FingerTable table;
@@ -27,7 +29,13 @@ public class Node<RESOURCE_TYPE> implements ChordNode<RESOURCE_TYPE> {
         this.predecessor = null;
     }
 
+    public Node (ChordTracker tracker) {
+        this(tracker.assignId());
+        this.tracker = tracker;
+    }
+
     public int getId() { return this.nodeId; }
+
 
 
     /************************************************************************************************
