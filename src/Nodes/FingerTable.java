@@ -7,7 +7,7 @@ import java.util.LinkedHashMap;
 public class FingerTable {
     private int hostNodeId;
 
-    static final int MAX_ENTRIES = 8;
+    public static final int MAX_ENTRIES = 8;
 
     public static final int MAX_NODES = (int) (Math.pow(2, MAX_ENTRIES));
     private LinkedHashMap<Integer, ChordNode> fingerTable = new LinkedHashMap<>();
