@@ -2,9 +2,10 @@ package Nodes;
 
 import API.ChordNode;
 
+import java.io.Serializable;
 import java.util.LinkedHashMap;
 
-public class FingerTable {
+public class FingerTable implements Serializable {
     private int hostNodeId;
 
     public static final int MAX_ENTRIES = 8;

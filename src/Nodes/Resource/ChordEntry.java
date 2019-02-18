@@ -1,8 +1,9 @@
 package Nodes.Resource;
 
+import java.io.Serializable;
 import java.util.Map.Entry;
 
-public class ChordEntry<K, V> implements Entry<K, V> {
+public class ChordEntry<K, V> implements Entry<K, V>, Serializable {
     private final K key;
     private V resource;
 
