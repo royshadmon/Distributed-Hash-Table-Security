@@ -13,26 +13,17 @@ public class IDA {
     public IDA(int totalParts, int threshold) {
         this.totalParts = totalParts;
         this.threshold = threshold;
-
     }
 
-    private double[][] encode(double[] message){
-        int lengthOfMessage = message.length;
+    public double[][] encodeBytes(byte[] bytes) {
+        double[] bytesForEncoding = new double[bytes.length];
+        System.out.println("Double array is : ");
 
-        double[][] a = new double[totalParts][threshold];
-        double[][] c = new double[totalParts][lengthOfMessage/ threshold];
+        for(int i=0;i< bytes.length;++i) {
+            bytesForEncoding[i] = bytes[i];
+        }
 
-        for(int i = 0; i< totalParts; ++i)
-            for(int j = 0; j < threshold; ++j)
-                a[i][j] = Math.pow(1+i, j);
-
-
-        for(int i = 0; i< totalParts; ++i)
-            for(int j = 0; j<lengthOfMessage/ threshold; ++j)
-                for(int k = 0; k< threshold; ++k)
-                    c[i][j] += a[i][k] * message[j* threshold +k];
-
-        return c;
+        return encode(bytesForEncoding);
     }
 
     public byte[] getDecodedBytes(double[][] message, int[] fid, int size) {
@@ -47,90 +38,48 @@ public class IDA {
         return bytes;
     }
 
-    private double[] decode(double[][] message, int[] fid){
-        int l = (message.length) * (message[0].length);
+    private double[][] encode(double[] message){
+        int lengthOfMessage = message.length;
 
-        double[][] a = new double[threshold][threshold];
-        double[] dm = new double[l];
-        double[][] ia;
+        double[][] a = new double[totalParts][threshold];
+        double[][] c = new double[totalParts][lengthOfMessage/ threshold];
+
+        for(int i = 0; i < totalParts; ++i)
+            for(int j = 0; j < threshold; ++j)
+                a[i][j] = Math.pow(1+i, j);
+
+
+        for(int i = 0; i < totalParts; ++i)
+            for(int j = 0; j < lengthOfMessage/ threshold; ++j)
+                for(int k = 0; k < threshold; ++k)
+                    c[i][j] += a[i][k] * message[j* threshold +k];
+
+        return c;
+    }
+
+    private double[] decode(double[][] message, int[] fid){
+        int numberOfBytes = (message.length) * (message[0].length);
+
+        double[][] inversionArray = new double[threshold][threshold];
+        double[] decodedBytes = new double[numberOfBytes];
+        double[][] invertedArray;
 
         for(int i = 0; i < threshold; ++i)
             for(int j = 0; j < threshold; ++j)
-                a[i][j] = Math.pow(fid[i], j);
+                inversionArray[i][j] = Math.pow(fid[i], j);
 
         Inverse in = new Inverse();
 
-        ia = in.invert(a);
+        invertedArray = in.invert(inversionArray);
 
-        for(int i = 0;i < l; ++i) {
-
+        for(int i = 0;i < numberOfBytes; ++i) {
             for (int k = 0; k < threshold; ++k) {
-                int index = i/ threshold;
-                dm[i] += ia[i % threshold][k] * message[k][index];
+                int index = i / threshold;
+                decodedBytes[i] += invertedArray[i % threshold][k] * message[k][index];
             }
         }
-        return dm;
-    }
 
-    public double[][] encodeBytes(byte[] bytes) {
-        double[] message = new double[bytes.length];
-        System.out.println("Double array is : ");
-
-        for(int i=0;i< bytes.length;++i) {
-            message[i] = bytes[i];
-        }
-
-        return encode(message);
-    }
-
-    public static void main(String[] args) {
-
-        IDA ida = new IDA(14,10);
-
-        Node node = new Node(5);
-
-        byte[] resourceBytes = SerializationUtils.serialize(node);
-
-        byte[] augmentedBytes = new byte[resourceBytes.length + 10];
-
-        for (int i = 0; i < resourceBytes.length; i++) {
-            augmentedBytes[i] = resourceBytes[i];
-        }
-
-        double[][] en = ida.encodeBytes(augmentedBytes);
-
-        System.out.println();
-
-        int i = 1;
-        for (double[] db : en) {
-            System.out.print(i + ": ");
-            ida.printArray(db);
-            i++;
-        }
-
-        System.out.println();
-        System.out.println();
-
-        int[] selected = {11,1,2,4,5,10,6,7,8,9};
-
-        en = ida.selectParts(en, selected);
-
-        for (int j = 0; j < selected.length; j++) {
-            System.out.print(selected[j] + ": ");
-            ida.printArray(en[j]);
-        }
-
-        byte[] decodedBytes = ida.getDecodedBytes(en, selected, resourceBytes.length);
-
-        System.out.println();
-        System.out.println();
-
-        ida.printArray(resourceBytes);
-        ida.printArray(decodedBytes);
-
-        node = SerializationUtils.deserialize(decodedBytes);
-
-        System.out.println(node.getId());
+        return decodedBytes;
     }
 
     private double[][] selectParts(double[][] encoded, int[] arr) {
@@ -161,11 +110,59 @@ public class IDA {
         System.out.println();
     }
 
-    private void printArray(int[] a) {
-        for (int b: a) {
-            System.out.print(b);
-            System.out.print(" ");
+    public static void main(String[] args) {
+
+        IDA ida = new IDA(5,3);
+
+        Node node = new Node(5);
+
+        byte[] resourceBytes = SerializationUtils.serialize(node);
+
+        byte[] augmentedBytes = new byte[resourceBytes.length + 10];
+
+        for (int i = 0; i < resourceBytes.length; i++) {
+            augmentedBytes[i] = resourceBytes[i];
         }
+
+        double[][] en = ida.encodeBytes(augmentedBytes);
+
         System.out.println();
+
+        int i = 1;
+        for (double[] db : en) {
+            System.out.print(i + ": ");
+            ida.printArray(db);
+            i++;
+        }
+
+        System.out.println();
+        System.out.println();
+
+        int[] selected = {1,2,3};
+
+        en = ida.selectParts(en, selected);
+
+        for (int j = 0; j < selected.length; j++) {
+            System.out.print(selected[j] + ": ");
+            ida.printArray(en[j]);
+        }
+
+        byte[] decodedBytes = ida.getDecodedBytes(en, selected, resourceBytes.length);
+
+        System.out.println();
+        System.out.println();
+
+        ida.printArray(resourceBytes);
+        ida.printArray(decodedBytes);
+
+        try {
+            node = SerializationUtils.deserialize(decodedBytes);
+            System.out.println(node.getId());
+        } catch (Exception e) {
+            System.out.println("Serialization exception = " + e.getLocalizedMessage());
+        } finally {
+            System.out.println("Done");
+        }
+
     }
 }
