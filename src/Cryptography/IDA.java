@@ -1,5 +1,6 @@
 package Cryptography;
 
+import Nodes.AbstractNode;
 import Nodes.Node;
 import org.apache.commons.lang3.SerializationUtils;
 

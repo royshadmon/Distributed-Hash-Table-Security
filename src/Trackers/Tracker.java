@@ -55,7 +55,7 @@ public class Tracker implements ChordTracker {
     /* Lookup
     *
     * Gets selected node from the cache cache
-    * Takes in a key from the requesting Node
+    * Takes in a key from the requesting AbstractNode
     * Tracker finds key in hash table (keymap)
     * For each key, query -> gets the partitions -> adds each partition and its key to a list
     * Call inverse on list

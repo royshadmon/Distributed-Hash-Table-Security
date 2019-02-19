@@ -4,6 +4,7 @@ import java.util.LinkedList;
 
 import API.ChordNode;
 
+import Nodes.AbstractNode;
 import Nodes.FingerTable;
 import Nodes.Node;
 
@@ -127,7 +128,7 @@ public class ChordCache {
         sel = q.getNode(node9);
         sel = q.getNode(node9);
 
-        q.queue.forEach(node -> System.out.println("Node in Queue " + node));
+        q.queue.forEach(node -> System.out.println("AbstractNode in Queue " + node));
 
         System.out.println(sel);
     }
