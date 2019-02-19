@@ -1,16 +1,12 @@
 import API.ChordNode;
 import Test.ChordTester;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutput;
-import java.io.ObjectOutputStream;
 import java.util.List;
 
 public class ChordNetwork {
 
     @SuppressWarnings("unchecked")
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
 
         int totalNodes = 11;
         int totalKeys = 13;
@@ -148,21 +144,6 @@ public class ChordNetwork {
         node9.prettyPrint();
         node10.prettyPrint();
 
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutput out;
-
-        byte[] yourBytes;
-        try {
-            out = new ObjectOutputStream(bos);
-            out.writeObject(node10);
-            out.flush();
-            yourBytes = bos.toByteArray();
-        } finally {
-            bos.close();
-        }
-
-        for (byte b : yourBytes)
-            System.out.println((double)b + " size " + yourBytes.length);
     }
 
 

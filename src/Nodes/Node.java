@@ -11,9 +11,9 @@ public class Node<RESOURCE_TYPE> implements ChordNode<RESOURCE_TYPE> {
 
     private ChordTracker tracker;
     private int nodeId;
-    private Node predecessor;
-    private FingerTable table;
-    private List<ChordEntry<Integer, RESOURCE_TYPE>> entries;
+    protected Node predecessor;
+    protected FingerTable table;
+    protected List<ChordEntry<Integer, RESOURCE_TYPE>> entries;
 
     /* Used for printing node's during lookup */
     private static boolean DEBUG = false;
@@ -193,7 +193,7 @@ public class Node<RESOURCE_TYPE> implements ChordNode<RESOURCE_TYPE> {
         }
         list.add(temp);
 
-        list.sort(new NodeComparator());
+        list.sort(new ChordNode.NodeComparator());
 
         return list;
     }
