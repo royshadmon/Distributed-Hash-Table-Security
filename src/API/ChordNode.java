@@ -1,9 +1,6 @@
 package API;
 
-import Nodes.FingerTable;
-
 import java.io.Serializable;
-import java.util.Comparator;
 
 public interface ChordNode<RESOURCE_TYPE> extends Serializable {
 
@@ -20,6 +17,4 @@ public interface ChordNode<RESOURCE_TYPE> extends Serializable {
     void prettyPrint();
 
     String toString();
-
-
 }
