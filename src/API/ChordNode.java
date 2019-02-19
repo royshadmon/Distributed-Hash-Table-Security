@@ -12,7 +12,7 @@ public interface ChordNode<RESOURCE_TYPE> extends Serializable {
     void join(ChordNode helper);
     void leave();
 
-    ChordNode find(int keyId);
+    RESOURCE_TYPE find(int keyId);
 
     void insert(int keyId, RESOURCE_TYPE resource);
     void remove(int keyId);

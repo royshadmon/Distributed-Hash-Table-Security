@@ -210,7 +210,7 @@ public class Node<RESOURCE_TYPE> implements ChordNode<RESOURCE_TYPE> {
      * @return Nodes.Node or null
      * @throws IndexOutOfBoundsException Keys must be between 0 and 255.
      */
-    public ChordNode find(int keyId) {
+    public RESOURCE_TYPE find(int keyId) {
         if (!ChordNode.inLeftIncludedInterval(0, keyId, FingerTable.MAX_NODES))
             throw new IndexOutOfBoundsException("Invalid Key Id");
 
@@ -230,7 +230,7 @@ public class Node<RESOURCE_TYPE> implements ChordNode<RESOURCE_TYPE> {
         for (int i=0; i < node.entries.size(); i++) {
             @SuppressWarnings("unchecked")
             ChordEntry<Integer, RESOURCE_TYPE> entry = (ChordEntry<Integer, RESOURCE_TYPE>) (node.entries.get(0));
-            if (entry.getKey() == key) return node;
+            if (entry.getKey() == key) return entry.getValue();
         }
 
         return null;

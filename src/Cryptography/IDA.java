@@ -1,5 +1,8 @@
 package Cryptography;
 
+import Nodes.Node;
+import org.apache.commons.lang3.SerializationUtils;
+
 /**
  * https://github.com/rkj2096/IDA
  */
@@ -33,7 +36,7 @@ public class IDA {
     }
 
     public double[] decode(double[][] message, int[] fid){
-        int l=message.length*message[0].length;
+        int l = (message.length) * (message[0].length);
 
         double[][] a = new double[m][m];
         double[] dm = new double[l];
@@ -47,10 +50,13 @@ public class IDA {
 
         ia = in.invert(a);
 
-        for(int i = 0;i < l; ++i)
-            for(int k = 0;k < m;++k)
-                dm[i] += ia[i%m][k] * message[k][i/m];
+        for(int i = 0;i < l; ++i) {
 
+            for (int k = 0; k < m; ++k) {
+                int index = i/m;
+                dm[i] += ia[i % m][k] * message[k][index];
+            }
+        }
         return dm;
     }
 
@@ -73,43 +79,50 @@ public class IDA {
             for(int j=0;j<l/m;++j){
                 en += em[i][j]+" ";
             }
+
             en+="\n";
         }
+
         return en;
     }
 
     public String sdecode(String ms){
         String rme = "";
-        String[] sms = ms.split("\n");
-        int sl=sms.length;
-        String[] id=new String[sl];
 
-        for(int i=0;i<sl;++i){
-            String tm[]=sms[i].split(":");
-            id[i]=tm[0];
-            sms[i]=tm[1];
+        String[] sms = ms.split("\n");
+        int numberOfParts = sms.length;
+
+        String[] id = new String[numberOfParts];
+
+        for(int i=0;i<numberOfParts;++i){
+            String[] partitions = sms[i].split(":");
+
+            id[i] = partitions[0];
+
+            sms[i] = partitions[1];
         }
 
-        String fl[]=sms[0].split(" ");
+        String fl[] = sms[0].split(" ");
 
-        int f=fl.length;
+        int partLength = fl.length;
 
-        String[][] smess = new String[sl][f];
-        int[] fid = new int[sl];
+        String[][] SMSs = new String[numberOfParts][partLength];
+        int[] fid = new int[numberOfParts];
 
-        double[][] mess = new double[sl][f];
+        double[][] mess = new double[numberOfParts][partLength];
 
-        for(int i=0;i<sl;++i)
-            smess[i]=sms[i].split(" ");
+        for(int i=0;i<numberOfParts;++i)
+            SMSs[i] = sms[i].split(" ");
 
-        for(int i = 0; i < sl;++i)
+        for(int i = 0; i < numberOfParts;++i)
             fid[i] = Integer.parseInt(id[i]);
 
-        for(int i = 0;i < sl;++i)
-            for(int j = 0;j < f;++j)
-                mess[i][j] = Double.parseDouble(smess[i][j]);
+        for(int i = 0;i < numberOfParts;++i)
+            for(int j = 0;j < partLength;++j)
+                mess[i][j] = Double.parseDouble(SMSs[i][j]);
 
-        double []rm = decode(mess,fid);
+
+        double []rm = decode(mess, fid);
 
         for (double v : rm) {
             rme += Math.round(v) + " ";
@@ -119,31 +132,65 @@ public class IDA {
     }
 
     public static void main(String[] args) {
-        IDA ida=new IDA(14,10,40);
+        Node<String> node = new Node<>(90);
+        node.join(null);
 
-        double[] message ={12,23,34,5,3,4,2,4,23,21,12,13,9,12,19,17,27,6,23,26,12,23,34,5,3,4,2,4,23,21,12,13,9,12,19,17,27,6,23,26};
-        double[][] em = ida.encode(message);
+        String resource = "Resource";
+        int key = 1;
 
-        for(int i=0;i<ida.n;++i){
-            System.out.print("Slice-"+(i+1)+":");
-            for(int j=0;j<ida.p/ida.m;++j){
-                System.out.print(em[i][j]+" ");
-            }
-            System.out.println();
+        node.insert(key, resource);
+        Node<String> node1 = new Node<>(89);
+        node1.join(node);
+
+        /*
+            Serializing and saving state
+         */
+        byte[] originalNodeBytes = SerializationUtils.serialize(node);
+        System.out.println("Converted object into " + originalNodeBytes.length + " number of bytes");
+        StringBuilder sb = new StringBuilder();
+
+        for (byte b: originalNodeBytes)
+            sb.append(b).append(" ");
+
+        String orig = sb.toString();
+        System.out.println(orig);
+
+        sb.append("0"); // Padding with a single zero to avoid index out of bounds error
+
+        IDA ida = new IDA(14,10, 131);
+        String encoded = ida.sencode(sb.toString());
+
+        StringBuilder ms = new StringBuilder();
+
+        String[] encodedArray = encoded.split("\n");
+
+        for (int i = 0; i < 10; i++) {
+            ms.append(encodedArray[i]).append("\n");
         }
 
+        String tenParts = ms.toString();
 
-        String mess="1:131.0 164.0 131.0 164.0"+"\n"+
-                "2:17690.0 22714.0 17690.0 22714.0"+"\n"+
-                "3:576189.0 701592.0 576189.0 701592.0"+"\n"+
-                "4:7091912.0 8555216.0 7091912.0 8555216.0"+"\n"+
-                "10:2.3342438642E10 2.8388903042E10 2.3342438642E10 2.8388903042E10"+"\n"+
-                "6:2.51513286E8 3.03750414E8 2.51513286E8 3.03750414E8"+"\n"+
-                "7:9.83623625E8 1.190237984E9 9.83623625E8 1.190237984E9"+"\n"+
-                "8:3.213509444E9 3.895839412E9 3.213509444E9 3.895839412E9"+"\n"+
-                "9:9.146362107E9 1.1107192116E10 9.146362107E9 1.1107192116E10"+"\n"+
-                "14:4.68264131102E11 5.71976050966E11 4.68264131102E11 5.71976050966E11";
+        String decoded = ida.sdecode(tenParts);
+        String[] bytes = decoded.split(" ");
 
-        System.out.println(ida.sdecode(mess));
+        byte[] reconstructed = new byte[originalNodeBytes.length];
+        StringBuilder reconstructedString = new StringBuilder();
+
+        for (int i = 0; i < reconstructed.length; i++) {
+            reconstructed[i] = Byte.parseByte(bytes[i]);
+            reconstructedString.append(reconstructed[i]).append(" ");
+        }
+
+        System.out.println("Reconstructing Node from " + reconstructed.length + " bytes");
+        System.out.println(reconstructedString);
+
+        /*
+            Reconstructing and checking
+         */
+        Node<String> node2 = SerializationUtils.deserialize(reconstructed);
+
+        System.out.println(node2.find(key));
+        System.out.println(node2.getId());
+        System.out.println("node2.getSuccessor() = " + node2.getSuccessor());
     }
 }
