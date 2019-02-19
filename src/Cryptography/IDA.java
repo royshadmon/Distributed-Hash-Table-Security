@@ -119,10 +119,7 @@ public class IDA {
         byte[] resourceBytes = SerializationUtils.serialize(node);
 
         byte[] augmentedBytes = new byte[resourceBytes.length + 10];
-
-        for (int i = 0; i < resourceBytes.length; i++) {
-            augmentedBytes[i] = resourceBytes[i];
-        }
+        System.arraycopy(resourceBytes, 0, augmentedBytes, 0, resourceBytes.length);
 
         double[][] en = ida.encodeBytes(augmentedBytes);
 
@@ -138,7 +135,7 @@ public class IDA {
         System.out.println();
         System.out.println();
 
-        int[] selected = {1,2,3};
+        int[] selected = {5, 3, 1};
 
         en = ida.selectParts(en, selected);
 
@@ -163,6 +160,5 @@ public class IDA {
         } finally {
             System.out.println("Done");
         }
-
     }
 }
