@@ -16,29 +16,29 @@ public class ChordNetwork {
         List<ChordNode<String>> nodes = ChordTester.generateRandomNodeList(totalNodes);
         List<Integer> keys = ChordTester.generateRandomKeyList(totalKeys);
 
-        System.out.println("\nNode " + nodes.get(0) + " is joining.\n");
+        System.out.println("\nAbstractNode " + nodes.get(0) + " is joining.\n");
         ChordNode node0 = nodes.get(0);
         node0.join(null);
 
-        System.out.println("\nNode " + nodes.get(1) + " is joining.\n");
+        System.out.println("\nAbstractNode " + nodes.get(1) + " is joining.\n");
         ChordNode node1 = nodes.get(1);
         node1.join(node0);
 
-        System.out.println("\nInserting keys with id " + keys.get(0) + " and " + keys.get(1) + " at Nodes.Node "
-                + node0 + " and Nodes.Node " + node1 + "\n");
+        System.out.println("\nInserting keys with id " + keys.get(0) + " and " + keys.get(1) + " at Nodes.AbstractNode "
+                + node0 + " and Nodes.AbstractNode " + node1 + "\n");
 
         node0.insert(keys.get(0), resource);
         node1.insert(keys.get(1), resource);
 
-        System.out.println("\nNode " + nodes.get(2) + " is joining.\n");
+        System.out.println("\nAbstractNode " + nodes.get(2) + " is joining.\n");
         ChordNode node2 = nodes.get(2);
         node2.join(node0);
 
-        System.out.println("\nNode " + nodes.get(3) + " is joining.\n");
+        System.out.println("\nAbstractNode " + nodes.get(3) + " is joining.\n");
         ChordNode node3 = nodes.get(3);
         node3.join(node2);
 
-        System.out.println("\nNode " + nodes.get(4) + " is joining.\n");
+        System.out.println("\nAbstractNode " + nodes.get(4) + " is joining.\n");
         ChordNode node4 = nodes.get(4);
         node4.join(node1);
 
@@ -46,11 +46,11 @@ public class ChordNetwork {
         node3.insert(keys.get(2), resource);
         node0.insert(keys.get(3), resource);
 
-        System.out.println("\nNode " + nodes.get(5) + " is joining.\n");
+        System.out.println("\nAbstractNode " + nodes.get(5) + " is joining.\n");
         ChordNode node5 = nodes.get(5);
         node5.join(node2);
 
-        System.out.println("\nInserting key with id " + keys.get(4) + " at Nodes.Node " + node4 + "\n");
+        System.out.println("\nInserting key with id " + keys.get(4) + " at Nodes.AbstractNode " + node4 + "\n");
         node4.insert(keys.get(4), resource);
 
         System.out.println("\nFinding keys, should return null\n");
@@ -64,15 +64,15 @@ public class ChordNetwork {
         node1.insert(keys.get(8), resource);
         node2.insert(keys.get(9), resource);
 
-        System.out.println("\nNode " + nodes.get(6) + " is joining.\n");
+        System.out.println("\nAbstractNode " + nodes.get(6) + " is joining.\n");
         ChordNode node6 = nodes.get(6);
         node6.join(node5);
 
-        System.out.println("\nNode " + nodes.get(7) + " is joining.\n");
+        System.out.println("\nAbstractNode " + nodes.get(7) + " is joining.\n");
         ChordNode node7 = nodes.get(7);
         node7.join(node4);
 
-        System.out.println("\nNode " + nodes.get(8) + " is joining.\n");
+        System.out.println("\nAbstractNode " + nodes.get(8) + " is joining.\n");
         ChordNode node8 = nodes.get(8);
         node8.join(node7);
 
@@ -81,11 +81,11 @@ public class ChordNetwork {
         node4.insert(keys.get(11), resource);
         node6.insert(keys.get(12), resource);
 
-        System.out.println("\nNode " + nodes.get(9) + " is joining.\n");
+        System.out.println("\nAbstractNode " + nodes.get(9) + " is joining.\n");
         ChordNode node9 = nodes.get(9);
         node9.join(node0);
 
-        System.out.println("\nNode " + nodes.get(10) + " is joining.\n");
+        System.out.println("\nAbstractNode " + nodes.get(10) + " is joining.\n");
         ChordNode node10 = nodes.get(10);
         node10.join(node7);
 
@@ -120,16 +120,16 @@ public class ChordNetwork {
 
         System.out.println("\n------------Nodes leave now, then reprint---------------");
 
-        System.out.println("\nNode " + node9 + "is leaving\n");
+        System.out.println("\nAbstractNode " + node9 + "is leaving\n");
         node9.leave();
 
-        System.out.println("\nNode " + node0 + "is leaving\n");
+        System.out.println("\nAbstractNode " + node0 + "is leaving\n");
         node0.leave();
 
-        System.out.println("\nNode " + node3 + "is leaving\n");
+        System.out.println("\nAbstractNode " + node3 + "is leaving\n");
         node3.leave();
 
-        System.out.println("\nNodes.Node " + node6 + "is leaving\n");
+        System.out.println("\nNodes.AbstractNode " + node6 + "is leaving\n");
         node6.leave();
 
         node0.prettyPrint();

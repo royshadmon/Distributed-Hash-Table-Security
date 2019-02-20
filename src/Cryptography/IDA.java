@@ -1,149 +1,196 @@
 package Cryptography;
 
+import Nodes.AbstractNode;
+import Nodes.Node;
+import org.apache.commons.lang3.SerializationUtils;
+import java.security.MessageDigest;
+
+import java.io.Serializable;
+import java.security.NoSuchAlgorithmException;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+
+
 /**
  * https://github.com/rkj2096/IDA
  */
 public class IDA {
 
-    private int n, m, p;
+    private int totalParts, threshold;
 
-    public IDA(int n,int m, int p) {
-        this.n = n;
-        this.m = m;
-        this.p = p;
+    public IDA(int totalParts, int threshold) {
+        this.totalParts = totalParts;
+        this.threshold = threshold;
     }
 
-    public double[][] encode(double[] message){
-        int l = message.length;
+    public double[][] encodeBytes(byte[] bytes) {
+        double[] bytesForEncoding = new double[bytes.length];
+        System.out.println("Double array is : ");
 
-        double[][] a = new double[n][m];
-        double[][] c = new double[n][l/m];
+        for(int i=0;i< bytes.length;++i) {
+            bytesForEncoding[i] = bytes[i];
+        }
 
-        for(int i = 0;i<n;++i)
-            for(int j = 0;j < m;++j)
-                a[i][j] = Math.pow(1+i,j);
+        return encode(bytesForEncoding);
+    }
+
+    public byte[] getDecodedBytes(double[][] message, int[] fid, int size) {
+
+        double[] decoded = decode(message, fid);
+
+        byte[] bytes = new byte[size];
+
+        for (int i = 0; i < size; i++)
+            bytes[i] = (byte) Math.round(decoded[i]);
+
+        return bytes;
+    }
+
+    private double[][] encode(double[] message){
+        int lengthOfMessage = message.length;
+
+        double[][] a = new double[totalParts][threshold];
+        double[][] c = new double[totalParts][lengthOfMessage/ threshold];
+
+        for(int i = 0; i < totalParts; ++i)
+            for(int j = 0; j < threshold; ++j)
+                a[i][j] = Math.pow(1+i, j);
 
 
-        for(int i=0; i<n; ++i)
-            for(int j=0; j<l/m; ++j)
-                for(int k=0; k<m; ++k)
-                    c[i][j] += a[i][k] * message[j*m+k];
+        for(int i = 0; i < totalParts; ++i)
+            for(int j = 0; j < lengthOfMessage/ threshold; ++j)
+                for(int k = 0; k < threshold; ++k)
+                    c[i][j] += a[i][k] * message[j* threshold +k];
 
         return c;
     }
 
-    public double[] decode(double[][] message, int[] fid){
-        int l=message.length*message[0].length;
+    private double[] decode(double[][] message, int[] fid){
+        int numberOfBytes = (message.length) * (message[0].length);
 
-        double[][] a = new double[m][m];
-        double[] dm = new double[l];
-        double[][] ia;
+        double[][] inversionArray = new double[threshold][threshold];
+        double[] decodedBytes = new double[numberOfBytes];
+        double[][] invertedArray;
 
-        for(int i = 0; i < m; ++i)
-            for(int j = 0; j < m; ++j)
-                a[i][j] = Math.pow(fid[i], j);
+        for(int i = 0; i < threshold; ++i)
+            for(int j = 0; j < threshold; ++j)
+                inversionArray[i][j] = Math.pow(fid[i], j);
 
         Inverse in = new Inverse();
 
-        ia = in.invert(a);
+        invertedArray = in.invert(inversionArray);
 
-        for(int i = 0;i < l; ++i)
-            for(int k = 0;k < m;++k)
-                dm[i] += ia[i%m][k] * message[k][i/m];
-
-        return dm;
-    }
-
-    public String sencode(String st){
-
-        String en="";
-
-        String[] mess=st.split(" ");
-
-        int l = mess.length;
-        double[] message = new double[l];
-
-        for(int i=0;i<l;++i)
-            message[i]=Double.parseDouble(mess[i]);
-
-        double[][] em = encode(message);
-
-        for(int i=0;i<n;++i){
-            en += (i+1)+":";
-            for(int j=0;j<l/m;++j){
-                en += em[i][j]+" ";
+        for(int i = 0;i < numberOfBytes; ++i) {
+            for (int k = 0; k < threshold; ++k) {
+                int index = i / threshold;
+                decodedBytes[i] += invertedArray[i % threshold][k] * message[k][index];
             }
-            en+="\n";
         }
-        return en;
+
+        return decodedBytes;
     }
 
-    public String sdecode(String ms){
-        String rme = "";
-        String[] sms = ms.split("\n");
-        int sl=sms.length;
-        String[] id=new String[sl];
+    private double[][] selectParts(double[][] encoded, int[] arr) {
+        int i = 0;
 
-        for(int i=0;i<sl;++i){
-            String tm[]=sms[i].split(":");
-            id[i]=tm[0];
-            sms[i]=tm[1];
+        double[][] selected = new double[arr.length][encoded[0].length];
+        for (int integer: arr) {
+            selected[i] = encoded[integer - 1];
+            i++;
         }
 
-        String fl[]=sms[0].split(" ");
-
-        int f=fl.length;
-
-        String[][] smess = new String[sl][f];
-        int[] fid = new int[sl];
-
-        double[][] mess = new double[sl][f];
-
-        for(int i=0;i<sl;++i)
-            smess[i]=sms[i].split(" ");
-
-        for(int i = 0; i < sl;++i)
-            fid[i] = Integer.parseInt(id[i]);
-
-        for(int i = 0;i < sl;++i)
-            for(int j = 0;j < f;++j)
-                mess[i][j] = Double.parseDouble(smess[i][j]);
-
-        double []rm = decode(mess,fid);
-
-        for (double v : rm) {
-            rme += Math.round(v) + " ";
-        }
-
-        return rme;
+        return selected;
     }
+
+    private void printArray(double[] a) {
+        for (double b: a) {
+            System.out.print(b);
+            System.out.print(" ");
+        }
+        System.out.println();
+    }
+
+    private void printArray(byte[] a) {
+        for (byte b: a) {
+            System.out.print(b);
+            System.out.print(" ");
+        }
+        System.out.println();
+    }
+
+
+
 
     public static void main(String[] args) {
-        IDA ida=new IDA(14,10,40);
 
-        double[] message ={12,23,34,5,3,4,2,4,23,21,12,13,9,12,19,17,27,6,23,26,12,23,34,5,3,4,2,4,23,21,12,13,9,12,19,17,27,6,23,26};
-        double[][] em = ida.encode(message);
+        IDA ida = new IDA(5,3);
 
-        for(int i=0;i<ida.n;++i){
-            System.out.print("Slice-"+(i+1)+":");
-            for(int j=0;j<ida.p/ida.m;++j){
-                System.out.print(em[i][j]+" ");
-            }
-            System.out.println();
+        
+        Node node = new Node(5);
+
+
+        People roy = new People("Roy", "Shadmon", "12345");
+
+
+
+
+        byte[] resourceBytes = SerializationUtils.serialize(roy);
+
+        byte[] augmentedBytes = new byte[resourceBytes.length + 10];
+        System.arraycopy(resourceBytes, 0, augmentedBytes, 0, resourceBytes.length);
+
+        double[][] en = ida.encodeBytes(augmentedBytes);
+
+        System.out.println();
+
+        int i = 1;
+        for (double[] db : en) {
+            System.out.print(i + ": ");
+            ida.printArray(db);
+            i++;
         }
 
+        System.out.println();
+        System.out.println();
 
-        String mess="1:131.0 164.0 131.0 164.0"+"\n"+
-                "2:17690.0 22714.0 17690.0 22714.0"+"\n"+
-                "3:576189.0 701592.0 576189.0 701592.0"+"\n"+
-                "4:7091912.0 8555216.0 7091912.0 8555216.0"+"\n"+
-                "10:2.3342438642E10 2.8388903042E10 2.3342438642E10 2.8388903042E10"+"\n"+
-                "6:2.51513286E8 3.03750414E8 2.51513286E8 3.03750414E8"+"\n"+
-                "7:9.83623625E8 1.190237984E9 9.83623625E8 1.190237984E9"+"\n"+
-                "8:3.213509444E9 3.895839412E9 3.213509444E9 3.895839412E9"+"\n"+
-                "9:9.146362107E9 1.1107192116E10 9.146362107E9 1.1107192116E10"+"\n"+
-                "14:4.68264131102E11 5.71976050966E11 4.68264131102E11 5.71976050966E11";
+        int[] selected = {5, 2, 1};
 
-        System.out.println(ida.sdecode(mess));
+        en = ida.selectParts(en, selected);
+
+        for (int j = 0; j < selected.length; j++) {
+            System.out.print(selected[j] + ": ");
+            ida.printArray(en[j]);
+        }
+
+        byte[] decodedBytes = ida.getDecodedBytes(en, selected, resourceBytes.length);
+
+        System.out.println();
+        System.out.println();
+
+        ida.printArray(resourceBytes);
+        ida.printArray(decodedBytes);
+
+        try {
+            roy = SerializationUtils.deserialize(decodedBytes);
+            System.out.println(roy.firstname);
+        } catch (Exception e) {
+            System.out.println("Serialization exception = " + e.getLocalizedMessage());
+        } finally {
+            System.out.println("Done");
+        }
     }
+}
+
+class People implements Serializable {
+
+    String firstname;
+    String lastname;
+    String password;
+
+    People(String firstname, String lastname, String password){
+        this.firstname = firstname;
+        this.lastname = lastname;
+        this.password = password;
+    }
+
 }

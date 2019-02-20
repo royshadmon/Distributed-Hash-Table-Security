@@ -2,12 +2,14 @@ package Nodes;
 
 import API.ChordNode;
 
+import java.io.Serializable;
 import java.util.LinkedHashMap;
 
-public class FingerTable {
+public class FingerTable implements Serializable {
+
     private int hostNodeId;
 
-    static final int MAX_ENTRIES = 8;
+    public static final int MAX_ENTRIES = 8;
 
     public static final int MAX_NODES = (int) (Math.pow(2, MAX_ENTRIES));
     private LinkedHashMap<Integer, ChordNode> fingerTable = new LinkedHashMap<>();
@@ -37,7 +39,7 @@ public class FingerTable {
     void prettyPrint() {
         if (this.fingerTable.size() > 0) {
             System.out.println("-------------------------");
-            System.out.println("Finger Table - Node " + this.hostNodeId);
+            System.out.println("Finger Table - AbstractNode " + this.hostNodeId);
             System.out.println("-------------------------");
             this.fingerTable.forEach((key, value) -> {
                 System.out.print(" Start: " + key);
