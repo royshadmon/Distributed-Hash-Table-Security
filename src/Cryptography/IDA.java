@@ -3,6 +3,13 @@ package Cryptography;
 import Nodes.AbstractNode;
 import Nodes.Node;
 import org.apache.commons.lang3.SerializationUtils;
+import java.security.MessageDigest;
+
+import java.io.Serializable;
+import java.security.NoSuchAlgorithmException;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+
 
 /**
  * https://github.com/rkj2096/IDA
@@ -111,13 +118,23 @@ public class IDA {
         System.out.println();
     }
 
+
+
+
     public static void main(String[] args) {
 
         IDA ida = new IDA(5,3);
 
+        
         Node node = new Node(5);
 
-        byte[] resourceBytes = SerializationUtils.serialize(node);
+
+        People roy = new People("Roy", "Shadmon", "12345");
+
+
+
+
+        byte[] resourceBytes = SerializationUtils.serialize(roy);
 
         byte[] augmentedBytes = new byte[resourceBytes.length + 10];
         System.arraycopy(resourceBytes, 0, augmentedBytes, 0, resourceBytes.length);
@@ -136,7 +153,7 @@ public class IDA {
         System.out.println();
         System.out.println();
 
-        int[] selected = {5, 3, 1};
+        int[] selected = {5, 2, 1};
 
         en = ida.selectParts(en, selected);
 
@@ -154,12 +171,26 @@ public class IDA {
         ida.printArray(decodedBytes);
 
         try {
-            node = SerializationUtils.deserialize(decodedBytes);
-            System.out.println(node.getId());
+            roy = SerializationUtils.deserialize(decodedBytes);
+            System.out.println(roy.firstname);
         } catch (Exception e) {
             System.out.println("Serialization exception = " + e.getLocalizedMessage());
         } finally {
             System.out.println("Done");
         }
     }
+}
+
+class People implements Serializable {
+
+    String firstname;
+    String lastname;
+    String password;
+
+    People(String firstname, String lastname, String password){
+        this.firstname = firstname;
+        this.lastname = lastname;
+        this.password = password;
+    }
+
 }
