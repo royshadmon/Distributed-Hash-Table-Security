@@ -1,19 +1,32 @@
 package Trackers;
+import java.io.Serializable;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.ArrayList;
-
+import Cryptography.IDA;
 import API.ChordNode;
 import API.ChordTracker;
+import Trackers.Partitions.Partition;
+import org.apache.commons.lang3.SerializationUtils;
 
-public class Tracker implements ChordTracker {
+public class Tracker<RESOURCE_TYPE extends Serializable> implements ChordTracker {
 
+
+    private static final int MAX_PARTITIONS = 5;
+    private static final int MIN_PARTITIONS = 3;
+    private static final int PADDING = 10;
     private ChordCache cache;
+    private IDA ida;
 
     Tracker () {
         cache = new ChordCache();
+        ida = new IDA(MAX_PARTITIONS, MIN_PARTITIONS, PADDING);
     }
 
     public Integer assignId() {
@@ -77,8 +90,45 @@ public class Tracker implements ChordTracker {
     *
     * */
 
+//    private RESOURCE_TYPE rebuildResource (List<Partition> partitions) {
+//        ida.getDecodedBytes(partitions);
+//    }
 
+    private List<Partition> partitionResource (RESOURCE_TYPE resource) {
 
+        List<Partition> partitions = new ArrayList<>();
+
+        byte[] serilaized = this.serialize(resource);
+
+        return ida.encodeBytes(serilaized);
+    }
+
+    private RESOURCE_TYPE reassemblePartition (List<Partition> partitionList) {
+        byte[] resourceByteStream = ida.getDecodedBytes(partitionList);
+        return SerializationUtils.deserialize(resourceByteStream);
+    }
+
+    private byte[] serialize (RESOURCE_TYPE resource) {
+
+        byte[] resourceBytes = SerializationUtils.serialize(resource);
+        byte[] augmentedBytes = new byte[resourceBytes.length + PADDING];
+        System.arraycopy(resourceBytes, 0, augmentedBytes, 0, resourceBytes.length);
+
+        return augmentedBytes;
+    }
+
+    public static void main(String[] args) {
+
+        People roy = new People("Roy", "Shadmon", "12345");
+
+        Tracker tracker = new Tracker();
+        List<Partition> p = tracker.partitionResource(roy);
+        p.forEach(System.out :: println);
+
+        People roy1 = (People) tracker.reassemblePartition(p);
+        System.out.println(roy1.firstname);
+    }
+  
     /* Lookup
     *
     * Gets selected node from the cache cache
@@ -107,5 +157,19 @@ public class Tracker implements ChordTracker {
     /* */
 
     /* */
+
+}
+
+class People implements Serializable {
+
+    String firstname;
+    String lastname;
+    String password;
+
+    People(String firstname, String lastname, String password){
+        this.firstname = firstname;
+        this.lastname = lastname;
+        this.password = password;
+    }
 
 }
