@@ -2,6 +2,7 @@ package Cryptography;
 
 import Nodes.AbstractNode;
 import Nodes.Node;
+import Trackers.Partitions.Partition;
 import org.apache.commons.lang3.SerializationUtils;
 import java.security.MessageDigest;
 
@@ -9,6 +10,9 @@ import java.io.Serializable;
 import java.security.NoSuchAlgorithmException;
 import java.math.BigInteger;
 import java.security.MessageDigest;
+import java.util.ArrayList;
+import java.util.List;
+import org.apache.commons.lang3.ArrayUtils;
 
 
 /**
@@ -16,28 +20,41 @@ import java.security.MessageDigest;
  */
 public class IDA {
 
-    private int totalParts, threshold;
+    private int totalParts, threshold, padding;
 
-    public IDA(int totalParts, int threshold) {
+    public IDA(int totalParts, int threshold, int padding) {
         this.totalParts = totalParts;
         this.threshold = threshold;
+        this.padding = padding;
     }
 
-    public double[][] encodeBytes(byte[] bytes) {
+    public List<Partition> encodeBytes(byte[] bytes) {
         double[] bytesForEncoding = new double[bytes.length];
         System.out.println("Double array is : ");
 
-        for(int i=0;i< bytes.length;++i) {
+        for(int i=0; i<bytes.length; ++i) {
             bytesForEncoding[i] = bytes[i];
         }
-
-        return encode(bytesForEncoding);
+        double[][] encoded = encode(bytesForEncoding);
+        List<Partition> partitionList = new ArrayList<>();
+        for (int i = 0; i < encoded.length; i++) {
+            partitionList.add(new Partition(i+1, ArrayUtils.toObject(encoded[i])));
+        }
+        return partitionList;
     }
 
-    public byte[] getDecodedBytes(double[][] message, int[] fid, int size) {
+    public byte[] getDecodedBytes(List<Partition> partitionsList) {
+
+        int[] fid = new int[partitionsList.size()];
+        double[][] message = new double[this.threshold][partitionsList.get(0).getValue().length];
+        for (int i = 0; i < this.threshold; i++) {
+            fid[i] = (int) ArrayUtils.toPrimitive(partitionsList.get(i).getKey());
+            message[i] = ArrayUtils.toPrimitive(partitionsList.get(i).getValue());
+        }
+
 
         double[] decoded = decode(message, fid);
-
+        int size = decoded.length - this.padding;
         byte[] bytes = new byte[size];
 
         for (int i = 0; i < size; i++)
@@ -121,64 +138,64 @@ public class IDA {
 
 
 
-    public static void main(String[] args) {
-
-        IDA ida = new IDA(5,3);
-
-        
-        Node node = new Node(5);
-
-
-        People roy = new People("Roy", "Shadmon", "12345");
-
-
-
-
-        byte[] resourceBytes = SerializationUtils.serialize(roy);
-
-        byte[] augmentedBytes = new byte[resourceBytes.length + 10];
-        System.arraycopy(resourceBytes, 0, augmentedBytes, 0, resourceBytes.length);
-
-        double[][] en = ida.encodeBytes(augmentedBytes);
-
-        System.out.println();
-
-        int i = 1;
-        for (double[] db : en) {
-            System.out.print(i + ": ");
-            ida.printArray(db);
-            i++;
-        }
-
-        System.out.println();
-        System.out.println();
-
-        int[] selected = {5, 2, 1};
-
-        en = ida.selectParts(en, selected);
-
-        for (int j = 0; j < selected.length; j++) {
-            System.out.print(selected[j] + ": ");
-            ida.printArray(en[j]);
-        }
-
-        byte[] decodedBytes = ida.getDecodedBytes(en, selected, resourceBytes.length);
-
-        System.out.println();
-        System.out.println();
-
-        ida.printArray(resourceBytes);
-        ida.printArray(decodedBytes);
-
-        try {
-            roy = SerializationUtils.deserialize(decodedBytes);
-            System.out.println(roy.firstname);
-        } catch (Exception e) {
-            System.out.println("Serialization exception = " + e.getLocalizedMessage());
-        } finally {
-            System.out.println("Done");
-        }
-    }
+//    public static void main(String[] args) {
+//
+//        IDA ida = new IDA(5,3);
+//
+//
+//        Node node = new Node(5);
+//
+//
+//        People roy = new People("Roy", "Shadmon", "12345");
+//
+//
+//
+//
+//        byte[] resourceBytes = SerializationUtils.serialize(roy);
+//
+//        byte[] augmentedBytes = new byte[resourceBytes.length + 10];
+//        System.arraycopy(resourceBytes, 0, augmentedBytes, 0, resourceBytes.length);
+//
+////        double[][] en = ida.encodeBytes(augmentedBytes);
+//
+//        System.out.println();
+//
+//        int i = 1;
+//        for (double[] db : en) {
+//            System.out.print(i + ": ");
+//            ida.printArray(db);
+//            i++;
+//        }
+//
+//        System.out.println();
+//        System.out.println();
+//
+//        int[] selected = {5, 2, 1};
+//
+//        en = ida.selectParts(en, selected);
+//
+//        for (int j = 0; j < selected.length; j++) {
+//            System.out.print(selected[j] + ": ");
+//            ida.printArray(en[j]);
+//        }
+//
+//        byte[] decodedBytes = ida.getDecodedBytes(en, selected, resourceBytes.length);
+//
+//        System.out.println();
+//        System.out.println();
+//
+//        ida.printArray(resourceBytes);
+//        ida.printArray(decodedBytes);
+//
+//        try {
+//            roy = SerializationUtils.deserialize(decodedBytes);
+//            System.out.println(roy.firstname);
+//        } catch (Exception e) {
+//            System.out.println("Serialization exception = " + e.getLocalizedMessage());
+//        } finally {
+//            System.out.println("Done");
+//        }
+//    }
 }
 
 class People implements Serializable {
