@@ -1,6 +1,7 @@
 package Trackers;
 import java.io.Serializable;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
@@ -15,8 +16,19 @@ import API.ChordTracker;
 import Trackers.Partitions.Partition;
 import org.apache.commons.lang3.SerializationUtils;
 
+import javax.crypto.Cipher;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
+
+
 public class Tracker<RESOURCE_TYPE extends Serializable> implements ChordTracker {
 
+
+
+    private Cipher encryptCipher;
+    private Cipher decryptCipher;
+    private static final byte[] initVector = "random init vector".getBytes(StandardCharsets.UTF_8);
+    private static final byte[] key = "random init key".getBytes(StandardCharsets.UTF_8);
 
     private static final int MAX_PARTITIONS = 5;
     private static final int MIN_PARTITIONS = 3;
@@ -27,6 +39,12 @@ public class Tracker<RESOURCE_TYPE extends Serializable> implements ChordTracker
     Tracker () {
         cache = new ChordCache();
         ida = new IDA(MAX_PARTITIONS, MIN_PARTITIONS, PADDING);
+        SecretKeySpec skeySpec = new SecretKeySpec(key, "AES");
+        IvParameterSpec iv = new IvParameterSpec(initVector);
+        encryptCipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
+        encryptCipher.init(Cipher.ENCRYPT_MODE, skeySpec, iv);
+        decryptCipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
+        decryptCipher.init(Cipher.DECRYPT_MODE, skeySpec, iv);
     }
 
     public Integer assignId() {
@@ -115,6 +133,42 @@ public class Tracker<RESOURCE_TYPE extends Serializable> implements ChordTracker
         System.arraycopy(resourceBytes, 0, augmentedBytes, 0, resourceBytes.length);
 
         return augmentedBytes;
+    }
+
+    public static byte[] encrypt(byte[] value) {
+        try {
+            IvParameterSpec iv = new IvParameterSpec(initVector);
+            SecretKeySpec skeySpec = new SecretKeySpec(key, "AES");
+
+            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
+            cipher.init(Cipher.ENCRYPT_MODE, skeySpec, iv);
+
+            byte[] encrypted = cipher.doFinal(value);
+
+            return encrypted;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public static byte[] decrypt(byte[] encrypted) {
+        try {
+            IvParameterSpec iv = new IvParameterSpec(initVector);
+            SecretKeySpec skeySpec = new SecretKeySpec(key, "AES");
+
+            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
+            cipher.init(Cipher.DECRYPT_MODE, skeySpec, iv);
+
+            byte[] original = cipher.doFinal(encrypted);
+
+            return original;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
+        return null;
     }
 
     public static void main(String[] args) {
