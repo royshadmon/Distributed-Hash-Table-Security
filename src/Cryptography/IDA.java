@@ -20,6 +20,7 @@ import org.apache.commons.lang3.ArrayUtils;
  */
 public class IDA {
 
+
     private int totalParts, threshold, padding;
 
     public IDA(int totalParts, int threshold, int padding) {
@@ -209,5 +210,5 @@ class People implements Serializable {
         this.lastname = lastname;
         this.password = password;
     }
-
+   
 }

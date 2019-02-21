@@ -4,16 +4,19 @@ import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.ArrayList;
 import Cryptography.IDA;
-
 import API.ChordNode;
 import API.ChordTracker;
 import Trackers.Partitions.Partition;
 import org.apache.commons.lang3.SerializationUtils;
 
 public class Tracker<RESOURCE_TYPE extends Serializable> implements ChordTracker {
+
 
     private static final int MAX_PARTITIONS = 5;
     private static final int MIN_PARTITIONS = 3;
@@ -125,7 +128,7 @@ public class Tracker<RESOURCE_TYPE extends Serializable> implements ChordTracker
         People roy1 = (People) tracker.reassemblePartition(p);
         System.out.println(roy1.firstname);
     }
-
+  
     /* Lookup
     *
     * Gets selected node from the cache cache
