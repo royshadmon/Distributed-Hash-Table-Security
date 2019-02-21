@@ -2,10 +2,11 @@ package Nodes;
 
 import Nodes.Resource.ChordEntry;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Node<RESOURCE_TYPE> extends AbstractNode<RESOURCE_TYPE> {
+public class Node<RESOURCE_TYPE extends Serializable> extends AbstractNode<RESOURCE_TYPE> {
     /* Used for printing node's during lookup */
 
     public Node(int nodeId) {
@@ -19,7 +20,6 @@ public class Node<RESOURCE_TYPE> extends AbstractNode<RESOURCE_TYPE> {
      /**
      * If the key exists, returns the node containing the key. Else returns null.
      *
-     * @param keyId
      * @return Nodes.AbstractNode or null
      * @throws IndexOutOfBoundsException Keys must be between 0 and 255.
      */
@@ -33,7 +33,7 @@ public class Node<RESOURCE_TYPE> extends AbstractNode<RESOURCE_TYPE> {
         System.out.println("Nodes.AbstractNode's involved in Find operation for key " + keyId + " are: ");
 
         int key = hash(keyId);
-        AbstractNode node = (AbstractNode) this.findSuccessor(key);
+        AbstractNode<RESOURCE_TYPE> node = this.findSuccessor(key);
 
         System.out.println("--------------------------------------------------");
 
@@ -41,8 +41,7 @@ public class Node<RESOURCE_TYPE> extends AbstractNode<RESOURCE_TYPE> {
 
 
         for (int i=0; i < node.entries.size(); i++) {
-            @SuppressWarnings("unchecked")
-            ChordEntry<Integer, RESOURCE_TYPE> entry = (ChordEntry<Integer, RESOURCE_TYPE>) (node.entries.get(0));
+            ChordEntry<Integer, RESOURCE_TYPE> entry = (node.entries.get(0));
             if (entry.getKey() == key) return entry.getValue();
         }
 
@@ -53,7 +52,6 @@ public class Node<RESOURCE_TYPE> extends AbstractNode<RESOURCE_TYPE> {
     /**
      * Inserts the key at the Successor of the keyId.
      *
-     * @param keyId
      */
     public void insert(int keyId, RESOURCE_TYPE resource) {
         if (!inLeftIncludedInterval(0, keyId, FingerTable.MAX_NODES))
@@ -62,7 +60,7 @@ public class Node<RESOURCE_TYPE> extends AbstractNode<RESOURCE_TYPE> {
         int key = hash(keyId);
         ChordEntry<Integer, RESOURCE_TYPE> entry = new ChordEntry<>(keyId, resource);
 
-        AbstractNode<RESOURCE_TYPE> node = (AbstractNode<RESOURCE_TYPE>) this.findSuccessor(key);
+        AbstractNode<RESOURCE_TYPE> node = this.findSuccessor(key);
 
         node.entries.add(entry);
     }
@@ -70,7 +68,6 @@ public class Node<RESOURCE_TYPE> extends AbstractNode<RESOURCE_TYPE> {
     /**
      *  If present, removes the key from the correct node.
      *
-     * @param keyId
      * @throws IndexOutOfBoundsException Keys must be between 0 and 255.
      */
     public void remove(int keyId) {
@@ -79,7 +76,7 @@ public class Node<RESOURCE_TYPE> extends AbstractNode<RESOURCE_TYPE> {
 
         int key = hash(keyId);
 
-        AbstractNode<RESOURCE_TYPE> node = (AbstractNode<RESOURCE_TYPE>) this.findSuccessor(key);
+        AbstractNode<RESOURCE_TYPE> node = this.findSuccessor(key);
 
         List<ChordEntry<Integer, RESOURCE_TYPE>> entries = node.entries;
 
@@ -105,7 +102,6 @@ public class Node<RESOURCE_TYPE> extends AbstractNode<RESOURCE_TYPE> {
         // 3. Add those keys to this node's key set
 
         // Should work even when there are no keys in the system
-        @SuppressWarnings("unchecked")
         List<ChordEntry<Integer, RESOURCE_TYPE>> newEntries = this.getSuccessor().updateEntries(this.getId());
 
         if (newEntries.size() != 0) {

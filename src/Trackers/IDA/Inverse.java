@@ -1,4 +1,4 @@
-package Cryptography;
+package Trackers.IDA;
 
 /**
  * https://github.com/rkj2096/IDA

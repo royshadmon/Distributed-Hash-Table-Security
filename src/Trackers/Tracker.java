@@ -1,61 +1,66 @@
 package Trackers;
+
+import API.ChordTracker;
+import Trackers.IDA.IDA;
+import Trackers.Partitions.Partition;
+import Trackers.Partitions.SealedPartition;
+import org.apache.commons.lang3.SerializationUtils;
+
+import javax.crypto.Cipher;
+import javax.crypto.SealedObject;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
-import java.math.BigInteger;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.List;
 import java.util.ArrayList;
-import Cryptography.IDA;
-import API.ChordNode;
-import API.ChordTracker;
-import Trackers.Partitions.Partition;
-import org.apache.commons.lang3.SerializationUtils;
-
-import javax.crypto.Cipher;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
+import java.util.List;
 
 
 public class Tracker<RESOURCE_TYPE extends Serializable> implements ChordTracker {
 
-
-
-    private Cipher encryptCipher;
-    private Cipher decryptCipher;
-    private static final byte[] initVector = "random init vector".getBytes(StandardCharsets.UTF_8);
-    private static final byte[] key = "random init key".getBytes(StandardCharsets.UTF_8);
-
+    private static final byte[] initVector = "RandomInitVector".getBytes(StandardCharsets.UTF_8);
+    private static final byte[] key = "RandomInitKeyVec".getBytes(StandardCharsets.UTF_8);
+    private static final String ENCRYPTION_ALGORITHM = "AES/CBC/PKCS5PADDING";
     private static final int MAX_PARTITIONS = 5;
     private static final int MIN_PARTITIONS = 3;
     private static final int PADDING = 10;
+
+    private SecretKeySpec keySpec;
+    private IvParameterSpec iv;
+    private Cipher encryptCipher;
+    private Cipher decryptCipher;
+
     private ChordCache cache;
     private IDA ida;
 
     Tracker () {
         cache = new ChordCache();
         ida = new IDA(MAX_PARTITIONS, MIN_PARTITIONS, PADDING);
-        SecretKeySpec skeySpec = new SecretKeySpec(key, "AES");
-        IvParameterSpec iv = new IvParameterSpec(initVector);
-        encryptCipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
-        encryptCipher.init(Cipher.ENCRYPT_MODE, skeySpec, iv);
-        decryptCipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
-        decryptCipher.init(Cipher.DECRYPT_MODE, skeySpec, iv);
+
+        keySpec = new SecretKeySpec(key, "AES");
+        iv = new IvParameterSpec(initVector);
+
+        encryptCipher = getCipher();
+        decryptCipher = getCipher();
+    }
+
+    private Cipher getCipher() {
+        try {
+            return Cipher.getInstance(ENCRYPTION_ALGORITHM);
+        } catch(Exception e) {
+            throw new RuntimeException();
+        }
     }
 
     public Integer assignId() {
         return -1;
     }
 
-
-
     //https://www.geeksforgeeks.org/sha-1-hash-in-java/
-    public static int encryptThisString(String input)
-    {
+    public static int encryptThisString(String input) {
         try {
 
             MessageDigest md = MessageDigest.getInstance("SHA-1");
@@ -74,7 +79,6 @@ public class Tracker<RESOURCE_TYPE extends Serializable> implements ChordTracker
             throw new RuntimeException(e);
         }
     }
-
 
     /* Insert
     *
@@ -108,26 +112,54 @@ public class Tracker<RESOURCE_TYPE extends Serializable> implements ChordTracker
     *
     * */
 
-//    private RESOURCE_TYPE rebuildResource (List<Partition> partitions) {
-//        ida.getDecodedBytes(partitions);
-//    }
-
-    private List<Partition> partitionResource (RESOURCE_TYPE resource) {
-
-        List<Partition> partitions = new ArrayList<>();
-
-        byte[] serilaized = this.serialize(resource);
-
-        return ida.encodeBytes(serilaized);
+    private List<SealedPartition> partitionResource (RESOURCE_TYPE resource) {
+        byte[] serialized = this.serialize(resource);
+        return sealPartitions(ida.encodeBytes(serialized));
     }
 
-    private RESOURCE_TYPE reassemblePartition (List<Partition> partitionList) {
-        byte[] resourceByteStream = ida.getDecodedBytes(partitionList);
+    private RESOURCE_TYPE reassemblePartition (List<SealedPartition> partitionList) {
+        byte[] resourceByteStream = ida.getDecodedBytes(unsealPartitions(partitionList));
         return SerializationUtils.deserialize(resourceByteStream);
     }
 
-    private byte[] serialize (RESOURCE_TYPE resource) {
+    private List<SealedPartition> sealPartitions(List<Partition> partitions) {
+        List<SealedPartition> sealedPartitions = new ArrayList<>();
 
+        for (Partition p : partitions) {
+            try {
+                encryptCipher.init(Cipher.ENCRYPT_MODE, keySpec, iv);
+                SealedObject ob = new SealedObject(p, encryptCipher);
+
+                SealedPartition sp = new SealedPartition(p.getKey(), ob);
+                sealedPartitions.add(sp);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        return sealedPartitions;
+    }
+
+    private List<Partition> unsealPartitions(List<SealedPartition> sealedPartitions) {
+        List<Partition> partitions = new ArrayList<>();
+
+        for (SealedPartition sp: sealedPartitions) {
+            try {
+
+                decryptCipher.init(Cipher.DECRYPT_MODE, keySpec, iv);
+                Partition p = (Partition) sp.getObject(decryptCipher);
+                partitions.add(p);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        return partitions;
+    }
+
+    private byte[] serialize (RESOURCE_TYPE resource) {
         byte[] resourceBytes = SerializationUtils.serialize(resource);
         byte[] augmentedBytes = new byte[resourceBytes.length + PADDING];
         System.arraycopy(resourceBytes, 0, augmentedBytes, 0, resourceBytes.length);
@@ -135,52 +167,16 @@ public class Tracker<RESOURCE_TYPE extends Serializable> implements ChordTracker
         return augmentedBytes;
     }
 
-    public static byte[] encrypt(byte[] value) {
-        try {
-            IvParameterSpec iv = new IvParameterSpec(initVector);
-            SecretKeySpec skeySpec = new SecretKeySpec(key, "AES");
-
-            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
-            cipher.init(Cipher.ENCRYPT_MODE, skeySpec, iv);
-
-            byte[] encrypted = cipher.doFinal(value);
-
-            return encrypted;
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-
-        return null;
-    }
-
-    public static byte[] decrypt(byte[] encrypted) {
-        try {
-            IvParameterSpec iv = new IvParameterSpec(initVector);
-            SecretKeySpec skeySpec = new SecretKeySpec(key, "AES");
-
-            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
-            cipher.init(Cipher.DECRYPT_MODE, skeySpec, iv);
-
-            byte[] original = cipher.doFinal(encrypted);
-
-            return original;
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-
-        return null;
-    }
-
     public static void main(String[] args) {
 
         People roy = new People("Roy", "Shadmon", "12345");
+        Tracker<People> tracker = new Tracker<>();
 
-        Tracker tracker = new Tracker();
-        List<Partition> p = tracker.partitionResource(roy);
-        p.forEach(System.out :: println);
+        List<SealedPartition> sp = tracker.partitionResource(roy);
 
-        People roy1 = (People) tracker.reassemblePartition(p);
-        System.out.println(roy1.firstname);
+        roy = tracker.reassemblePartition(sp);
+
+        System.out.println(roy.firstname);
     }
   
     /* Lookup
@@ -199,18 +195,6 @@ public class Tracker<RESOURCE_TYPE extends Serializable> implements ChordTracker
     * - return resource
     *
     * */
-
-    /* */
-
-    /* */
-
-    /* */
-
-    /* */
-
-    /* */
-
-    /* */
 
 }
 

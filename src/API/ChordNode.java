@@ -2,11 +2,11 @@ package API;
 
 import java.io.Serializable;
 
-public interface ChordNode<RESOURCE_TYPE> extends Serializable {
+public interface ChordNode<RESOURCE_TYPE extends Serializable> extends Serializable {
 
     int getId();
 
-    void join(ChordNode helper);
+    void join(ChordNode<RESOURCE_TYPE> helper);
     void leave();
 
     RESOURCE_TYPE find(int keyId);

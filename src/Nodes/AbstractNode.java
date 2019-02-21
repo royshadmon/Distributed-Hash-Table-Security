@@ -1,19 +1,18 @@
 package Nodes;
 
 import API.ChordNode;
-import API.ChordTracker;
 import Nodes.Resource.ChordEntry;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-public abstract class AbstractNode<RESOURCE_TYPE> implements ChordNode<RESOURCE_TYPE> {
+public abstract class AbstractNode<RESOURCE_TYPE extends Serializable> implements ChordNode<RESOURCE_TYPE> {
 
-    private ChordTracker tracker;
     private int nodeId;
-    AbstractNode predecessor;
-    FingerTable table;
+    private AbstractNode<RESOURCE_TYPE> predecessor;
+    private FingerTable<RESOURCE_TYPE> table;
 
     List<ChordEntry<Integer, RESOURCE_TYPE>> entries;
 
@@ -25,15 +24,10 @@ public abstract class AbstractNode<RESOURCE_TYPE> implements ChordNode<RESOURCE_
             throw new IndexOutOfBoundsException("Invalid Key Id");
 
         this.nodeId = hash(nodeId);
-        this.table = new FingerTable(nodeId);
+        this.table = new FingerTable<>(nodeId);
         this.entries = new ArrayList<>();
         this.predecessor = null;
         DEBUG = false;
-    }
-
-    public AbstractNode(ChordTracker tracker) {
-        this(tracker.assignId());
-        this.tracker = tracker;
     }
 
     public int getId() { return this.nodeId; }
@@ -50,7 +44,7 @@ public abstract class AbstractNode<RESOURCE_TYPE> implements ChordNode<RESOURCE_
      *
      * @throws RuntimeException Cannot join from the same node.
      */
-    public void join(ChordNode helper) {
+    public void join(ChordNode<RESOURCE_TYPE> helper) {
         if (helper == null) this.initNetwork();
         else {
             if (helper.equals(this)) throw new RuntimeException("Cannot join using same node");
@@ -69,10 +63,10 @@ public abstract class AbstractNode<RESOURCE_TYPE> implements ChordNode<RESOURCE_
      * @param help is the bootstrapper node. The node that is joining uses network state information
      *               provided by the bootstrapper node to populate its finger tables.
      */
-    private void initFingerTable(ChordNode help) {
+    private void initFingerTable(ChordNode<RESOURCE_TYPE> help) {
 
-        AbstractNode helper = (AbstractNode) help;
-        this.put(1, (AbstractNode) helper.findSuccessor(this.computeStart(1)));
+        AbstractNode<RESOURCE_TYPE> helper = (AbstractNode<RESOURCE_TYPE>) help;
+        this.put(1, helper.findSuccessor(this.computeStart(1)));
 
         this.predecessor = this.getSuccessor().predecessor;
         this.getSuccessor().predecessor = this;
@@ -81,7 +75,7 @@ public abstract class AbstractNode<RESOURCE_TYPE> implements ChordNode<RESOURCE_
             if (inLeftIncludedInterval(this.getId(), this.computeStart(i), this.get(i-1).getId()))
                 this.put(i, this.get(i-1));
             else {
-                AbstractNode successor = (AbstractNode) helper.findSuccessor(this.computeStart(i));
+                AbstractNode<RESOURCE_TYPE> successor = helper.findSuccessor(this.computeStart(i));
 
                 if (inClosedInterval(this.computeStart(i), this.getId(), successor.getId()))
                     this.put(i, this);
@@ -95,11 +89,11 @@ public abstract class AbstractNode<RESOURCE_TYPE> implements ChordNode<RESOURCE_
     /**
      * Following the node join, the node then proceeds to update other nodes in the network based on an update index.
      */
-    protected void updateOthers() {
+    private void updateOthers() {
         for (int i = 1; i <= FingerTable.MAX_ENTRIES; i++) {
             int updateIndex = computeUpdateIndex(i-1);
 
-            AbstractNode predecessor = (AbstractNode) this.findPredecessor(updateIndex);
+            AbstractNode<RESOURCE_TYPE> predecessor = this.findPredecessor(updateIndex);
 
             if (predecessor.getSuccessor().getId() == updateIndex)
                 predecessor = predecessor.getSuccessor();
@@ -117,7 +111,7 @@ public abstract class AbstractNode<RESOURCE_TYPE> implements ChordNode<RESOURCE_
      *             to the finger table of this node.
      * @param entryNumber This is the entry in the finger table that needs to be updated.
      */
-    protected void updateFingerTable(AbstractNode node, int entryNumber) {
+    private void updateFingerTable(AbstractNode<RESOURCE_TYPE> node, int entryNumber) {
         if (node.getId() == this.getId()) return;
 
         if (inLeftIncludedInterval(this.getId(), node.getId(), this.get(entryNumber).getId())) {
@@ -134,7 +128,7 @@ public abstract class AbstractNode<RESOURCE_TYPE> implements ChordNode<RESOURCE_
     /**
      * Initializes the network when the first node joins
      */
-    protected void initNetwork() {
+    private void initNetwork() {
         for (int i = 1; i <= FingerTable.MAX_ENTRIES; i++)
             this.put(i, this);
 
@@ -150,7 +144,6 @@ public abstract class AbstractNode<RESOURCE_TYPE> implements ChordNode<RESOURCE_
      * This function is invoked when the node wants to leave the network.
      * It triggers a rebuilding of Fingertables of the remaining nodes in the fingertable.
      */
-    @SuppressWarnings("unchecked")
     public void leave() {
 
         if (this.getSuccessor().equals(this)) {
@@ -160,33 +153,32 @@ public abstract class AbstractNode<RESOURCE_TYPE> implements ChordNode<RESOURCE_
 
         this.getSuccessor().entries.addAll(this.entries);
 
-        List<AbstractNode> activeNodes = this.getActiveNodes();
+        List<AbstractNode<RESOURCE_TYPE>> activeNodes = this.getActiveNodes();
         activeNodes.remove(this);
 
-        for (AbstractNode node : activeNodes) {
+        for (AbstractNode<RESOURCE_TYPE> node : activeNodes) {
             for (int i = 1; i <= FingerTable.MAX_ENTRIES; i++) {
-                AbstractNode succ = (AbstractNode) this.findSuccessor(node.computeStart(i));
-                if (succ.getId() == this.getId()) {
-                    succ = this.getSuccessor();
+                AbstractNode<RESOURCE_TYPE> successor = this.findSuccessor(node.computeStart(i));
+                if (successor.getId() == this.getId()) {
+                    successor = this.getSuccessor();
                 }
-                node.put(i, succ);
+                node.put(i, successor);
             }
         }
 
         this.getSuccessor().predecessor = this.predecessor;
-        this.table = new FingerTable(this.getId());
+        this.table = new FingerTable<>(this.getId());
         this.entries = new ArrayList<>();
         this.predecessor = null;
     }
 
     /**
      * Creates an iterable list of all nodes in the network. Time Complexity is O(N)
-     * @return
      */
-    protected List<AbstractNode> getActiveNodes(){
-        List<AbstractNode> list = new ArrayList<>();
+    private List<AbstractNode<RESOURCE_TYPE>> getActiveNodes(){
+        List<AbstractNode<RESOURCE_TYPE>> list = new ArrayList<>();
 
-        AbstractNode temp = this;
+        AbstractNode<RESOURCE_TYPE> temp = this;
         while (temp.getSuccessor() != this) {
             list.add(temp);
             temp = temp.getSuccessor();
@@ -206,23 +198,18 @@ public abstract class AbstractNode<RESOURCE_TYPE> implements ChordNode<RESOURCE_
     /**
      * If the key exists, returns the node containing the key. Else returns null.
      *
-     * @param keyId
-     * @return Nodes.AbstractNode or null
+     * @return RESOURCE_TYPE object or null
      * @throws IndexOutOfBoundsException Keys must be between 0 and 255.
      */
     public abstract RESOURCE_TYPE find(int keyId);
 
     /**
      * Inserts the key at the Successor of the keyId.
-     *
-     * @param keyId
      */
     public abstract void insert(int keyId, RESOURCE_TYPE resource);
 
     /**
      *  If present, removes the key from the correct node.
-     *
-     * @param keyId
      * @throws IndexOutOfBoundsException Keys must be between 0 and 255.
      */
     public abstract void remove(int keyId);
@@ -251,22 +238,21 @@ public abstract class AbstractNode<RESOURCE_TYPE> implements ChordNode<RESOURCE_
      * @param id is the id of the Nodes.AbstractNode or the key
      * @return Nodes.AbstractNode that is the Successor of the id
      */
-    ChordNode findSuccessor(int id) {
-        AbstractNode node = (AbstractNode) this.findPredecessor(id);
+    AbstractNode<RESOURCE_TYPE> findSuccessor(int id) {
+        AbstractNode<RESOURCE_TYPE> node = this.findPredecessor(id);
         return node.getSuccessor();
     }
 
 
     /**
      * This function returns the node that precedes the specified ID on the chord ring.
-     * @param id
      * @return Nodes.AbstractNode that is the Predecessor of the id.
      */
-    ChordNode findPredecessor(int id) {
-        AbstractNode predecessor = this;
+    private AbstractNode<RESOURCE_TYPE> findPredecessor(int id) {
+        AbstractNode<RESOURCE_TYPE> predecessor = this;
 
         while (!inRightIncludedInterval(predecessor.getId(), id, predecessor.getSuccessor().getId())) {
-            predecessor = (AbstractNode) predecessor.findClosestPrecedingFinger(id);
+            predecessor = predecessor.findClosestPrecedingFinger(id);
 
             if (DEBUG) System.out.println(predecessor);
         }
@@ -276,10 +262,9 @@ public abstract class AbstractNode<RESOURCE_TYPE> implements ChordNode<RESOURCE_
 
     /**
      * This functions looks in this node's finger table to find the node that is closest to the id.
-     * @param id
      * @return Nodes.AbstractNode in the finger table that is closest to the specified id.
      */
-    ChordNode findClosestPrecedingFinger(int id) {
+    private AbstractNode<RESOURCE_TYPE> findClosestPrecedingFinger(int id) {
         for (int i = FingerTable.MAX_ENTRIES; i >= 1 ; i--)
             if (inOpenInterval(this.getId(), this.get(i).getId(), id)) return this.get(i);
 
@@ -293,25 +278,21 @@ public abstract class AbstractNode<RESOURCE_TYPE> implements ChordNode<RESOURCE_
     /**
      * Returns first entry of the finger table.
      */
-    public AbstractNode getSuccessor() { return this.get(1); }
+    AbstractNode<RESOURCE_TYPE> getSuccessor() { return this.get(1); }
 
 
     /**
      * Computes: id + 2^(i-1)
      *
-     * @param entryNumber
-     * @return
      */
-    int computeStart(int entryNumber) { return FingerTable.computeStart(this.getId(), entryNumber); }
+    private int computeStart(int entryNumber) { return FingerTable.computeStart(this.getId(), entryNumber); }
 
 
     /**
      * Computes: id - 2^(i)
      *
-     * @param index
-     * @return
      */
-    int computeUpdateIndex(int index) {
+    private int computeUpdateIndex(int index) {
         int result = this.getId() - (int) Math.pow(2, index) + FingerTable.MAX_NODES;
         result = result % FingerTable.MAX_NODES;
         return result;
@@ -327,14 +308,12 @@ public abstract class AbstractNode<RESOURCE_TYPE> implements ChordNode<RESOURCE_
 
     public String toString() { return "" + this.getId(); }
 
-    void put(int entryNumber, AbstractNode node) { this.table.put(entryNumber, node); }
+    private void put(int entryNumber, AbstractNode<RESOURCE_TYPE> node) { this.table.put(entryNumber, node); }
 
-    AbstractNode get(int entryNumber) { return (AbstractNode) this.table.get(entryNumber); }
+    private AbstractNode<RESOURCE_TYPE> get(int entryNumber) { return this.table.get(entryNumber); }
 
      /**
      * Emulates C++ Unsigned 8 bit Integer.
-     * @param number
-     * @return
      */
     int hash(int number) { return number & 0xff; }
 
@@ -344,7 +323,7 @@ public abstract class AbstractNode<RESOURCE_TYPE> implements ChordNode<RESOURCE_
      *
      * @return True or False
      */
-    boolean inClosedInterval(int a, int c, int b) {
+    private boolean inClosedInterval(int a, int c, int b) {
 
         a = a % FingerTable.MAX_NODES;
         b = b % FingerTable.MAX_NODES;
@@ -360,7 +339,7 @@ public abstract class AbstractNode<RESOURCE_TYPE> implements ChordNode<RESOURCE_
      *
      * @return True or False
      */
-    boolean inOpenInterval(int a, int c, int b) { return inClosedInterval(a+1, c,b-1); }
+    private boolean inOpenInterval(int a, int c, int b) { return inClosedInterval(a+1, c,b-1); }
 
 
     /**
