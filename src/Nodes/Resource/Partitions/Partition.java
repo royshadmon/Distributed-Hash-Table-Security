@@ -1,12 +1,12 @@
-package Trackers.Partitions;
+package Nodes.Resource.Partitions;
 
 import Nodes.Resource.ChordEntry;
 
 import java.util.Arrays;
 
 public class Partition extends ChordEntry<Integer, double[]> {
-    public Partition(Integer key, double[] resource) {
-        super(key, resource);
+    public Partition(Integer partitionId, double[] resource) {
+        super(partitionId, resource);
     }
 
     @Override

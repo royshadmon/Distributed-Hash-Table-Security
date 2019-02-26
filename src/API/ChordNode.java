@@ -2,7 +2,7 @@ package API;
 
 import java.io.Serializable;
 
-public interface ChordNode<RESOURCE_TYPE extends Serializable> extends Serializable {
+public interface ChordNode<RESOURCE_TYPE extends Serializable> {
 
     int getId();
 

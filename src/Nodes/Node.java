@@ -1,16 +1,19 @@
 package Nodes;
 
 import Nodes.Resource.ChordEntry;
+import Nodes.Security.Cryptographer;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Node<RESOURCE_TYPE extends Serializable> extends AbstractNode<RESOURCE_TYPE> {
-    /* Used for printing node's during lookup */
+
+    private Cryptographer<RESOURCE_TYPE> cryptographer;
 
     public Node(int nodeId) {
         super(nodeId);
+        cryptographer = new Cryptographer<>();
     }
 
     /************************************************************************************************
@@ -27,18 +30,8 @@ public class Node<RESOURCE_TYPE extends Serializable> extends AbstractNode<RESOU
         if (!inLeftIncludedInterval(0, keyId, FingerTable.MAX_NODES))
             throw new IndexOutOfBoundsException("Invalid Key Id");
 
-        DEBUG = true;
-
-        System.out.println("--------------------------------------------------");
-        System.out.println("Nodes.AbstractNode's involved in Find operation for key " + keyId + " are: ");
-
         int key = hash(keyId);
         AbstractNode<RESOURCE_TYPE> node = this.findSuccessor(key);
-
-        System.out.println("--------------------------------------------------");
-
-        DEBUG = false;
-
 
         for (int i=0; i < node.entries.size(); i++) {
             ChordEntry<Integer, RESOURCE_TYPE> entry = (node.entries.get(0));

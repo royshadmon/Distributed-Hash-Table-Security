@@ -1,9 +1,8 @@
-package Trackers;
+package Nodes.Security;
 
-import API.ChordTracker;
-import Trackers.IDA.IDA;
-import Trackers.Partitions.Partition;
-import Trackers.Partitions.SealedPartition;
+import Nodes.Security.IDA.IDA;
+import Nodes.Resource.Partitions.Partition;
+import Nodes.Resource.Partitions.SealedPartition;
 import org.apache.commons.lang3.SerializationUtils;
 
 import javax.crypto.Cipher;
@@ -19,61 +18,67 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class Tracker<RESOURCE_TYPE extends Serializable> implements ChordTracker {
+public class Cryptographer<RESOURCE_TYPE extends Serializable> {
 
     private static final byte[] initVector = "RandomInitVector".getBytes(StandardCharsets.UTF_8);
     private static final byte[] key = "RandomInitKeyVec".getBytes(StandardCharsets.UTF_8);
     private static final String ENCRYPTION_ALGORITHM = "AES/CBC/PKCS5PADDING";
+
+    private SecretKeySpec keySpec;
+    private IvParameterSpec iv;
+
+    // IDA Constants
     private static final int MAX_PARTITIONS = 5;
     private static final int MIN_PARTITIONS = 3;
     private static final int PADDING = 10;
 
-    private SecretKeySpec keySpec;
-    private IvParameterSpec iv;
-    private Cipher encryptCipher;
-    private Cipher decryptCipher;
-
-    private ChordCache cache;
     private IDA ida;
 
-    Tracker () {
-        cache = new ChordCache();
+    public Cryptographer() {
         ida = new IDA(MAX_PARTITIONS, MIN_PARTITIONS, PADDING);
 
         keySpec = new SecretKeySpec(key, "AES");
         iv = new IvParameterSpec(initVector);
-
-        encryptCipher = getCipher();
-        decryptCipher = getCipher();
     }
 
-    private Cipher getCipher() {
+    private Cipher getEncryptCipher(){
+        return getCipher(Cipher.ENCRYPT_MODE);
+    }
+
+    private Cipher getDecryptCipher(){
+        return getCipher(Cipher.DECRYPT_MODE);
+    }
+
+    private Cipher getCipher(int mode){
         try {
-            return Cipher.getInstance(ENCRYPTION_ALGORITHM);
+            Cipher cipher = Cipher.getInstance(ENCRYPTION_ALGORITHM);
+            cipher.init(mode, keySpec, iv);
+
+            return cipher;
         } catch(Exception e) {
-            throw new RuntimeException();
+            throw new RuntimeException(e);
         }
     }
 
-    public Integer assignId() {
-        return -1;
+    public static String hashString(String input) {
+        return hashBytes(input.getBytes());
     }
 
-    //https://www.geeksforgeeks.org/sha-1-hash-in-java/
-    public static int encryptThisString(String input) {
+    public static String hashBytes(byte[] input) {
         try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
 
-            MessageDigest md = MessageDigest.getInstance("SHA-1");
-            byte[] messageDigest = md.digest(input.getBytes());
+            byte[] messageDigest = md.digest(input);
+
             BigInteger no = new BigInteger(1, messageDigest);
-            String hashtext = no.toString(16);
+
+            StringBuilder hashtext = new StringBuilder(no.toString(16));
+
             while (hashtext.length() < 32) {
-                hashtext = "0" + hashtext;
+                hashtext.insert(0, "0");
             }
 
-            BigInteger key = new BigInteger(hashtext, 16);
-            int keyId = key.mod(new BigInteger("256", 10)).intValue();
-            return keyId;
+            return hashtext.toString();
         }
         catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
@@ -114,7 +119,8 @@ public class Tracker<RESOURCE_TYPE extends Serializable> implements ChordTracker
 
     private List<SealedPartition> partitionResource (RESOURCE_TYPE resource) {
         byte[] serialized = this.serialize(resource);
-        return sealPartitions(ida.encodeBytes(serialized));
+        String hash = hashBytes(serialized);
+        return sealPartitions(ida.encodeBytes(serialized), hash);
     }
 
     private RESOURCE_TYPE reassemblePartition (List<SealedPartition> partitionList) {
@@ -122,16 +128,16 @@ public class Tracker<RESOURCE_TYPE extends Serializable> implements ChordTracker
         return SerializationUtils.deserialize(resourceByteStream);
     }
 
-    private List<SealedPartition> sealPartitions(List<Partition> partitions) {
+    private List<SealedPartition> sealPartitions(List<Partition> partitions, String hash) {
         List<SealedPartition> sealedPartitions = new ArrayList<>();
 
         for (Partition p : partitions) {
             try {
-                encryptCipher.init(Cipher.ENCRYPT_MODE, keySpec, iv);
-                SealedObject ob = new SealedObject(p, encryptCipher);
+                SealedObject ob = new SealedObject(p, getEncryptCipher());
 
-                SealedPartition sp = new SealedPartition(p.getKey(), ob);
+                SealedPartition sp = new SealedPartition(hash, p.getKey(), ob);
                 sealedPartitions.add(sp);
+                hash = hashString(hash);
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -146,9 +152,7 @@ public class Tracker<RESOURCE_TYPE extends Serializable> implements ChordTracker
 
         for (SealedPartition sp: sealedPartitions) {
             try {
-
-                decryptCipher.init(Cipher.DECRYPT_MODE, keySpec, iv);
-                Partition p = (Partition) sp.getObject(decryptCipher);
+                Partition p = (Partition) sp.getObject(getDecryptCipher());
                 partitions.add(p);
 
             } catch (Exception e) {
@@ -170,32 +174,30 @@ public class Tracker<RESOURCE_TYPE extends Serializable> implements ChordTracker
     public static void main(String[] args) {
 
         People roy = new People("Roy", "Shadmon", "12345");
-        Tracker<People> tracker = new Tracker<>();
+        Cryptographer<People> cryptographer = new Cryptographer<>();
 
-        List<SealedPartition> sp = tracker.partitionResource(roy);
+        List<SealedPartition> sp = cryptographer.partitionResource(roy);
+        SealedPartition s = sp.get(4);
 
-        roy = tracker.reassemblePartition(sp);
+        String key = s.getPartitionName();
+
+        sp.forEach(p -> {
+            if (p.getPartitionName().equals(key))
+                System.out.println(p.getChordId());
+        });
+
+        sp.forEach(p -> System.out.println(p.getChordId() + " | " + p.getPartitionName()));
+
+        roy = cryptographer.reassemblePartition(sp);
 
         System.out.println(roy.firstname);
-    }
-  
-    /* Lookup
-    *
-    * Gets selected node from the cache cache
-    * Takes in a key from the requesting AbstractNode
-    * Tracker finds key in hash table (keymap)
-    * For each key, query -> gets the partitions -> adds each partition and its key to a list
-    * Call inverse on list
-    * Returns resource to node (encryted? PKC?)
-    *
-    * - selected = ChordCache.pop()
-    * - listOfPartitionKeys = keymap.get(resourceKey)
-    * - listOfPartitions = query (for each partition key)
-    * - resource = inverse(listOfPartitons)
-    * - return resource
-    *
-    * */
+        String hash = Cryptographer.hashBytes(cryptographer.serialize(roy));
 
+        for (int i = 0; i < 5; i++) {
+            System.out.println(hash);
+            hash = Cryptographer.hashString(hash);
+        }
+    }
 }
 
 class People implements Serializable {
@@ -209,5 +211,4 @@ class People implements Serializable {
         this.lastname = lastname;
         this.password = password;
     }
-
 }

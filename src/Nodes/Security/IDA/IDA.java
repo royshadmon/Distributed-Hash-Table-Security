@@ -1,6 +1,6 @@
-package Trackers.IDA;
+package Nodes.Security.IDA;
 
-import Trackers.Partitions.Partition;
+import Nodes.Resource.Partitions.Partition;
 
 import java.util.ArrayList;
 import java.util.List;

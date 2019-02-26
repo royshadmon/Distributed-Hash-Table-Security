@@ -1,10 +1,9 @@
-package Trackers;
+package Nodes.Security;
 
 import java.util.LinkedList;
 
 import API.ChordNode;
 
-import Nodes.AbstractNode;
 import Nodes.FingerTable;
 import Nodes.Node;
 

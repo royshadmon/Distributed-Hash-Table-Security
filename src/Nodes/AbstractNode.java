@@ -2,6 +2,8 @@ package Nodes;
 
 import API.ChordNode;
 import Nodes.Resource.ChordEntry;
+import Nodes.Resource.Partitions.SealedPartition;
+import Nodes.Security.Cryptographer;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -13,11 +15,7 @@ public abstract class AbstractNode<RESOURCE_TYPE extends Serializable> implement
     private int nodeId;
     private AbstractNode<RESOURCE_TYPE> predecessor;
     private FingerTable<RESOURCE_TYPE> table;
-
     List<ChordEntry<Integer, RESOURCE_TYPE>> entries;
-
-    /* Used for printing node's during lookup */
-    static boolean DEBUG;
 
     public AbstractNode(int nodeId) {
         if (!inLeftIncludedInterval(0, nodeId, FingerTable.MAX_NODES))
@@ -26,8 +24,6 @@ public abstract class AbstractNode<RESOURCE_TYPE extends Serializable> implement
         this.nodeId = hash(nodeId);
         this.table = new FingerTable<>(nodeId);
         this.entries = new ArrayList<>();
-        this.predecessor = null;
-        DEBUG = false;
     }
 
     public int getId() { return this.nodeId; }
@@ -251,11 +247,9 @@ public abstract class AbstractNode<RESOURCE_TYPE extends Serializable> implement
     private AbstractNode<RESOURCE_TYPE> findPredecessor(int id) {
         AbstractNode<RESOURCE_TYPE> predecessor = this;
 
-        while (!inRightIncludedInterval(predecessor.getId(), id, predecessor.getSuccessor().getId())) {
+        while (!inRightIncludedInterval(predecessor.getId(), id, predecessor.getSuccessor().getId()))
             predecessor = predecessor.findClosestPrecedingFinger(id);
 
-            if (DEBUG) System.out.println(predecessor);
-        }
         return predecessor;
     }
 
