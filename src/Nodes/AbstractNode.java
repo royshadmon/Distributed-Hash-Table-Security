@@ -2,8 +2,6 @@ package Nodes;
 
 import API.ChordNode;
 import Nodes.Resource.ChordEntry;
-import Nodes.Resource.Partitions.SealedPartition;
-import Nodes.Security.Cryptographer;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -131,6 +129,19 @@ public abstract class AbstractNode<RESOURCE_TYPE extends Serializable> implement
         this.predecessor = this;
     }
 
+    /**
+     * This function is called when a new node joins, and transfers keys to the node (this node) joining the network.
+     *
+     */
+    protected abstract void migrateEntries();
+
+    /**
+     * Removes entries that no longer belong to this node.
+     *
+     * @param id of the node joining the network
+     * @return entries that have been removed from this node.
+     */
+    protected abstract List<ChordEntry<Integer, RESOURCE_TYPE>> updateEntries(int id);
 
     /************************************************************************************************
      NODE LEAVE - Methods used exclusively for the node leave operation
@@ -185,44 +196,6 @@ public abstract class AbstractNode<RESOURCE_TYPE extends Serializable> implement
 
         return list;
     }
-
-
-    /************************************************************************************************
-     KEY METHODS - Methods used for the addition and removal of keys in the network
-     ************************************************************************************************
-
-    /**
-     * If the key exists, returns the node containing the key. Else returns null.
-     *
-     * @return RESOURCE_TYPE object or null
-     * @throws IndexOutOfBoundsException Keys must be between 0 and 255.
-     */
-    public abstract RESOURCE_TYPE find(int keyId);
-
-    /**
-     * Inserts the key at the Successor of the keyId.
-     */
-    public abstract void insert(int keyId, RESOURCE_TYPE resource);
-
-    /**
-     *  If present, removes the key from the correct node.
-     * @throws IndexOutOfBoundsException Keys must be between 0 and 255.
-     */
-    public abstract void remove(int keyId);
-
-    /**
-     * This function is called when a new node joins, and transfers keys to the node (this node) joining the network.
-     *
-     */
-    protected abstract void migrateEntries();
-
-    /**
-     * Removes entries that no longer belong to this node.
-     *
-     * @param id of the node joining the network
-     * @return entries that have been removed from this node.
-     */
-    protected abstract List<ChordEntry<Integer, RESOURCE_TYPE>> updateEntries(int id);
 
     /************************************************************************************************
      BASIC FOUNDATIONAL METHODS - Helper methods to find the successor and predecessor of an id.
