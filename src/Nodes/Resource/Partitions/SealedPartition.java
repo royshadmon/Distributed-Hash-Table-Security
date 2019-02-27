@@ -20,6 +20,10 @@ public class SealedPartition extends ChordEntry<Integer, SealedObject> {
         return partitionName;
     }
 
+    public void setPartitionName(String partitionName) {
+        this.partitionName = partitionName;
+    }
+
     public int getChordId() {
         BigInteger key = new BigInteger(this.partitionName, 16);
         return key.mod(new BigInteger("" + FingerTable.MAX_NODES, 10)).intValue();

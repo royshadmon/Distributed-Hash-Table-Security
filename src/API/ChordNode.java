@@ -9,10 +9,9 @@ public interface ChordNode<RESOURCE_TYPE extends Serializable> {
     void join(ChordNode<RESOURCE_TYPE> helper);
     void leave();
 
-    RESOURCE_TYPE find(int keyId);
+    RESOURCE_TYPE find(String resourceKey);
 
-    void insert(int keyId, RESOURCE_TYPE resource);
-    void remove(int keyId);
+    void insert(String resourceKey, RESOURCE_TYPE resource);
 
     void prettyPrint();
 

@@ -10,11 +10,12 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 
-public abstract class AbstractNode<RESOURCE_TYPE extends Serializable> {
-    protected HashMap<String, String> resourceMap;
+public abstract class AbstractNode<RESOURCE_TYPE extends Serializable> implements ChordNode<RESOURCE_TYPE> {
     private int nodeId;
     private AbstractNode<RESOURCE_TYPE> predecessor;
     private FingerTable<RESOURCE_TYPE> table;
+
+    HashMap<String, String> resourceMap; // resource map stores the resource name to the first partition
     List<SealedPartition> entries;
 
     public AbstractNode(int nodeId) {
@@ -40,7 +41,7 @@ public abstract class AbstractNode<RESOURCE_TYPE extends Serializable> {
      *
      * @throws RuntimeException Cannot join from the same node.
      */
-    public void join(AbstractNode<RESOURCE_TYPE> helper) {
+    public void join(ChordNode<RESOURCE_TYPE> helper) {
         if (helper == null) this.initNetwork();
         else {
             if (helper.equals(this)) throw new RuntimeException("Cannot join using same node");
@@ -59,7 +60,7 @@ public abstract class AbstractNode<RESOURCE_TYPE extends Serializable> {
      * @param help is the bootstrapper node. The node that is joining uses network state information
      *               provided by the bootstrapper node to populate its finger tables.
      */
-    private void initFingerTable(AbstractNode<RESOURCE_TYPE> help) {
+    private void initFingerTable(ChordNode<RESOURCE_TYPE> help) {
 
         AbstractNode<RESOURCE_TYPE> helper = (AbstractNode<RESOURCE_TYPE>) help;
         this.put(1, helper.findSuccessor(this.computeStart(1)));
