@@ -2,23 +2,25 @@ package Nodes;
 
 import API.ChordNode;
 import Nodes.Resource.ChordEntry;
+import Nodes.Resource.Partitions.SealedPartition;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 
-public abstract class AbstractNode<RESOURCE_TYPE extends Serializable> implements ChordNode<RESOURCE_TYPE> {
-
+public abstract class AbstractNode<RESOURCE_TYPE extends Serializable> {
+    protected HashMap<String, String> resourceMap;
     private int nodeId;
     private AbstractNode<RESOURCE_TYPE> predecessor;
     private FingerTable<RESOURCE_TYPE> table;
-    List<ChordEntry<Integer, RESOURCE_TYPE>> entries;
+    List<SealedPartition> entries;
 
     public AbstractNode(int nodeId) {
         if (!inLeftIncludedInterval(0, nodeId, FingerTable.MAX_NODES))
             throw new IndexOutOfBoundsException("Invalid Key Id");
-
+        resourceMap = new HashMap<>();
         this.nodeId = hash(nodeId);
         this.table = new FingerTable<>(nodeId);
         this.entries = new ArrayList<>();
@@ -38,7 +40,7 @@ public abstract class AbstractNode<RESOURCE_TYPE extends Serializable> implement
      *
      * @throws RuntimeException Cannot join from the same node.
      */
-    public void join(ChordNode<RESOURCE_TYPE> helper) {
+    public void join(AbstractNode<RESOURCE_TYPE> helper) {
         if (helper == null) this.initNetwork();
         else {
             if (helper.equals(this)) throw new RuntimeException("Cannot join using same node");
@@ -57,7 +59,7 @@ public abstract class AbstractNode<RESOURCE_TYPE extends Serializable> implement
      * @param help is the bootstrapper node. The node that is joining uses network state information
      *               provided by the bootstrapper node to populate its finger tables.
      */
-    private void initFingerTable(ChordNode<RESOURCE_TYPE> help) {
+    private void initFingerTable(AbstractNode<RESOURCE_TYPE> help) {
 
         AbstractNode<RESOURCE_TYPE> helper = (AbstractNode<RESOURCE_TYPE>) help;
         this.put(1, helper.findSuccessor(this.computeStart(1)));
@@ -141,7 +143,7 @@ public abstract class AbstractNode<RESOURCE_TYPE extends Serializable> implement
      * @param id of the node joining the network
      * @return entries that have been removed from this node.
      */
-    protected abstract List<ChordEntry<Integer, RESOURCE_TYPE>> updateEntries(int id);
+    protected abstract List<SealedPartition> updateEntries(int id);
 
     /************************************************************************************************
      NODE LEAVE - Methods used exclusively for the node leave operation
@@ -327,8 +329,8 @@ public abstract class AbstractNode<RESOURCE_TYPE extends Serializable> implement
     /**
      *  Helper Class to allow for Nodes.AbstractNode sorting if required. Used only in getActiveNodes
      */
-    class NodeComparator implements Comparator<ChordNode> {
-        public int compare(ChordNode a, ChordNode b) {
+    class NodeComparator implements Comparator<AbstractNode> {
+        public int compare(AbstractNode a, AbstractNode b) {
             return a.getId() - b.getId();
         }
     }

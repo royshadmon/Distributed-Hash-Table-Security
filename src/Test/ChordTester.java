@@ -1,6 +1,7 @@
 package Test;
 
 import API.ChordNode;
+import Nodes.AbstractNode;
 import Nodes.FingerTable;
 import Nodes.Node;
 
@@ -13,10 +14,10 @@ public class ChordTester {
     private static Random generator = new Random(0);
 
     @SuppressWarnings("unchecked")
-    public static List<ChordNode<String>> generateRandomNodeList(int numberOfNodes) {
+    public static List<AbstractNode<String>> generateRandomNodeList(int numberOfNodes) {
         List<Integer> ids = generateListOfIds();
 
-        List<ChordNode<String>> nodeList = new ArrayList<>();
+        List<AbstractNode<String>> nodeList = new ArrayList<>();
 
         for (int i = 0; i < numberOfNodes; i++) {
             int randomIndex = generator.nextInt(FingerTable.MAX_NODES - i);

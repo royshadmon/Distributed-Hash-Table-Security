@@ -34,8 +34,8 @@ public class Cryptographer<RESOURCE_TYPE extends Serializable> {
     private IvParameterSpec iv;
 
     // IDA Constants
-    private static final int MAX_PARTITIONS = 5;
-    private static final int MIN_PARTITIONS = 3;
+    public static final int MAX_PARTITIONS = 5;
+    public static final int MIN_PARTITIONS = 3;
     private static final int PADDING = 10;
 
     private IDA ida;
@@ -47,11 +47,11 @@ public class Cryptographer<RESOURCE_TYPE extends Serializable> {
         iv = new IvParameterSpec(initVector);
     }
 
-    private Cipher getEncryptCipher(){
+    public Cipher getEncryptCipher(){
         return getCipher(Cipher.ENCRYPT_MODE);
     }
 
-    private Cipher getDecryptCipher(){
+    public Cipher getDecryptCipher(){
         return getCipher(Cipher.DECRYPT_MODE);
     }
 
@@ -123,13 +123,13 @@ public class Cryptographer<RESOURCE_TYPE extends Serializable> {
     *
     * */
 
-    private List<SealedPartition> partitionResource (RESOURCE_TYPE resource) {
+    public List<SealedPartition> partitionResource (RESOURCE_TYPE resource) {
         byte[] serialized = this.serialize(resource);
         String hash = hashBytes(serialized);
         return sealPartitions(ida.encodeBytes(serialized), hash);
     }
 
-    private RESOURCE_TYPE reassemblePartition (List<SealedPartition> partitionList) {
+    public RESOURCE_TYPE reassembleResource(List<SealedPartition> partitionList) {
         byte[] resourceByteStream = ida.getDecodedBytes(unsealPartitions(partitionList));
         return SerializationUtils.deserialize(resourceByteStream);
     }
@@ -194,7 +194,7 @@ public class Cryptographer<RESOURCE_TYPE extends Serializable> {
 
         sp.forEach(p -> System.out.println(p.getChordId() + " | " + p.getPartitionName()));
 
-        roy = cryptographer.reassemblePartition(sp);
+        roy = cryptographer.reassembleResource(sp);
 
         System.out.println(roy.firstname);
         String hash = Cryptographer.hashBytes(cryptographer.serialize(roy));
