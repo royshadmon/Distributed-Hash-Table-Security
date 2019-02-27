@@ -1,12 +1,5 @@
 package Nodes.Security;
 
-import java.util.LinkedList;
-
-import API.ChordNode;
-
-import Nodes.FingerTable;
-import Nodes.Node;
-
 /**
  *
  * Definition of a Cache that contains nodes already present in the network.

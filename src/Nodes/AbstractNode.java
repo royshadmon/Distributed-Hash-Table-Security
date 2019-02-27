@@ -1,7 +1,6 @@
 package Nodes;
 
 import API.ChordNode;
-import Nodes.Resource.ChordEntry;
 import Nodes.Resource.Partitions.SealedPartition;
 
 import java.io.Serializable;
@@ -272,7 +271,7 @@ public abstract class AbstractNode<RESOURCE_TYPE extends Serializable> implement
         this.table.prettyPrint();
 
         if (this.entries.size() > 0)
-            System.out.println("AbstractNode " + this + "'s Resource Keys are: " + this.entries);
+            System.out.println("Node " + this + "'s " + this.entries.size() + " " + "Sealed Objects are: " + this.entries);
         System.out.println("\n___________________________________\n");
     }
 
@@ -285,7 +284,7 @@ public abstract class AbstractNode<RESOURCE_TYPE extends Serializable> implement
      /**
      * Emulates C++ Unsigned 8 bit Integer.
      */
-    int hash(int number) { return number & 0xff; }
+    private int hash(int number) { return number & 0xff; }
 
 
     /**
@@ -317,7 +316,7 @@ public abstract class AbstractNode<RESOURCE_TYPE extends Serializable> implement
      *
      * @return True or False
      */
-    boolean inLeftIncludedInterval(int a, int c, int b) { return inClosedInterval(a, c, b-1); }
+    private boolean inLeftIncludedInterval(int a, int c, int b) { return inClosedInterval(a, c, b-1); }
 
 
     /**

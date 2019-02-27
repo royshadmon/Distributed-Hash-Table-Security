@@ -36,6 +36,6 @@ public class SealedPartition extends ChordEntry<Integer, SealedObject> {
 
     @Override
     public String toString() {
-        return getKey() + " " + getValue();
+        return getChordId() + " | " + getValue();
     }
 }

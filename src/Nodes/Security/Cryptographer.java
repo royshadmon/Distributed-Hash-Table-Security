@@ -1,25 +1,19 @@
 package Nodes.Security;
 
-import Nodes.Security.IDA.IDA;
 import Nodes.Resource.Partitions.Partition;
 import Nodes.Resource.Partitions.SealedPartition;
-
+import Nodes.Security.IDA.IDA;
 import org.apache.commons.lang3.SerializationUtils;
 
 import javax.crypto.Cipher;
 import javax.crypto.SealedObject;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-
 import java.io.Serializable;
-
 import java.math.BigInteger;
-
 import java.nio.charset.StandardCharsets;
-
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,11 +41,11 @@ public class Cryptographer<RESOURCE_TYPE extends Serializable> {
         iv = new IvParameterSpec(initVector);
     }
 
-    public Cipher getEncryptCipher(){
+    private Cipher getEncryptCipher(){
         return getCipher(Cipher.ENCRYPT_MODE);
     }
 
-    public Cipher getDecryptCipher(){
+    private Cipher getDecryptCipher(){
         return getCipher(Cipher.DECRYPT_MODE);
     }
 
@@ -70,7 +64,7 @@ public class Cryptographer<RESOURCE_TYPE extends Serializable> {
         return hashBytes(input.getBytes());
     }
 
-    public static String hashBytes(byte[] input) {
+    private static String hashBytes(byte[] input) {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
 
@@ -90,38 +84,6 @@ public class Cryptographer<RESOURCE_TYPE extends Serializable> {
             throw new RuntimeException(e);
         }
     }
-
-    /* Insert
-    *
-    * Gets selected node from cache cache
-    *
-    * Takes a resource and the assigned resource key from the node as input
-    *
-    * Partition is the IDA, assignID portions
-    *
-    * List will have partitionID, partition
-    *
-    * - selected = ChordCache.pop()
-    * - list = this.partition(resource)
-    * - keymap.put for each element in list
-    * - selected.insert-> (for all elements in list)    *
-    *
-    *
-    *
-    * */
-
-    /* Partition
-    *
-    * Takes in the resource
-    *
-    * Calls IDA on resource (which also does all the encoding work)
-    *
-    * - listOfPartitions = IDA(resource)
-    * - return listOfPartitions
-    *
-    *
-    *
-    * */
 
     public List<SealedPartition> partitionResource (RESOURCE_TYPE resource) {
         byte[] serialized = this.serialize(resource);

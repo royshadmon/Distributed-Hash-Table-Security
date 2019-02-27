@@ -1,10 +1,10 @@
 package Nodes.Security.IDA;
 
 import Nodes.Resource.Partitions.Partition;
+import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.commons.lang3.ArrayUtils;
 
 
 /**
