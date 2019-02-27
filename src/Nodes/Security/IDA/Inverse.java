@@ -1,4 +1,4 @@
-package Cryptography;
+package Nodes.Security.IDA;
 
 /**
  * https://github.com/rkj2096/IDA
