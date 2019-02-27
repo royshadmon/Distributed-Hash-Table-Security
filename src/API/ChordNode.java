@@ -11,7 +11,8 @@ public interface ChordNode<RESOURCE_TYPE extends Serializable> {
 
     RESOURCE_TYPE find(String resourceKey);
 
-    void insert(String resourceKey, RESOURCE_TYPE resource);
+    void insert(String resourceName, RESOURCE_TYPE resource);
+    void remove(String resourceName);
 
     void prettyPrint();
 

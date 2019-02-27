@@ -159,6 +159,7 @@ public abstract class AbstractNode<RESOURCE_TYPE extends Serializable> implement
             System.out.println("No nodes left in the network!");
             return;
         }
+        this.removeResources();
 
         this.getSuccessor().entries.addAll(this.entries);
 
@@ -180,6 +181,8 @@ public abstract class AbstractNode<RESOURCE_TYPE extends Serializable> implement
         this.entries = new ArrayList<>();
         this.predecessor = null;
     }
+
+    protected abstract void removeResources();
 
     /**
      * Creates an iterable list of all nodes in the network. Time Complexity is O(N)

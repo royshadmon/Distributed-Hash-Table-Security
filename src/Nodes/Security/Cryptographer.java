@@ -30,7 +30,7 @@ public class Cryptographer<RESOURCE_TYPE extends Serializable> {
     // IDA Constants
     public static final int MAX_PARTITIONS = 5;
     public static final int MIN_PARTITIONS = 3;
-    private static final int PADDING = 10;
+    private static final int PADDING = 1;
 
     private IDA ida;
 

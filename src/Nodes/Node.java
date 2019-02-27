@@ -6,10 +6,7 @@ import Nodes.Security.Cryptographer;
 
 import java.io.Serializable;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 public class Node<RESOURCE_TYPE extends Serializable> extends AbstractNode<RESOURCE_TYPE> {
 
@@ -51,6 +48,28 @@ public class Node<RESOURCE_TYPE extends Serializable> extends AbstractNode<RESOU
         this.reinsertPartitions(resourceName, partitionName, partitions);
 
         return resource;
+    }
+
+    /**
+     *  If present, removes the key from the correct node.
+     *
+     *  Note:
+     *      retrievePartitions inherently removes all partitions of a resource
+     */
+    public void remove (String resourceName) {
+        String partitionName = this.resourceMap.get(resourceName);
+        if (partitionName == null)
+            return;
+
+        this.retrievePartitions(partitionName);
+        this.resourceMap.remove(resourceName);
+    }
+
+    public void removeResources() {
+        for (Map.Entry<String, String> partition : this.resourceMap.entrySet()) {
+            this.retrievePartition(partition.getValue());
+        }
+        this.resourceMap = new HashMap<>();
     }
 
     private List<SealedPartition> retrievePartitions(String partitionName) {
@@ -200,39 +219,23 @@ public class Node<RESOURCE_TYPE extends Serializable> extends AbstractNode<RESOU
 
         ChordNode<People> n5 = new Node<>(32);
         n5.join(n1);
+        n1.leave();
 
-        n1.prettyPrint();
+//        n1.prettyPrint();
         n2.prettyPrint();
         n3.prettyPrint();
         n4.prettyPrint();
         n5.prettyPrint();
-    }
+        n2.find("Karthik");
 
-    /**
-     *  If present, removes the key from the correct node.
-     *
-     * @throws IndexOutOfBoundsException Keys must be between 0 and 255.
-     */
-//    public void remove(int keyId) {
-//        if (!inLeftIncludedInterval(0, keyId, FingerTable.MAX_NODES))
-//            throw new IndexOutOfBoundsException("Invalid Key Id");
-//
-//        int key = hash(keyId);
-//
-//        AbstractNode<RESOURCE_TYPE> node = this.findSuccessor(key);
-//
-//        List<ChordEntry<Integer, RESOURCE_TYPE>> entries = node.entries;
-//
-//        for (int i = 0; i < entries.size(); i++) {
-//            ChordEntry<Integer, RESOURCE_TYPE> entry = entries.get(i);
-//            if (entry.getKey() == key) {
-//                entries.remove(i);
-//                return;
-//            }
-//        }
-//
-//        System.out.println("Key with id " + keyId + " not found");
-//    }
+//        n1.remove("Karthik");
+
+//        n1.prettyPrint();
+//        n2.prettyPrint();
+//        n3.prettyPrint();
+//        n4.prettyPrint();
+//        n5.prettyPrint();
+    }
 
 }
 
