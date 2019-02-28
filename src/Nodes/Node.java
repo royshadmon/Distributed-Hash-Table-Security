@@ -3,6 +3,7 @@ package Nodes;
 import API.ChordNode;
 import Nodes.Resource.Partitions.SealedPartition;
 import Nodes.Security.Cryptographer;
+import org.apache.commons.lang3.ArrayUtils;
 
 import java.io.Serializable;
 import java.math.BigInteger;
@@ -75,18 +76,35 @@ public class Node<RESOURCE_TYPE extends Serializable> extends AbstractNode<RESOU
     private List<SealedPartition> retrievePartitions(String partitionName) {
         List<SealedPartition> retrievedPartitions = new ArrayList<>();
 
-        for (int i = 1; i <= Cryptographer.MAX_PARTITIONS; i++) {
+        List<Integer> indexes = pickRandomPartitions();
 
-            int id = this.convertToChordId(partitionName);
+        for (int i = 1; i <= Cryptographer.MAX_PARTITIONS; i++) {
+            String name = partitionName;
+            for (int j = 0; j < indexes.get(0); j++) {
+                name = Cryptographer.hashString(name);
+            }
+            indexes.remove(0);
+
+            int id = this.convertToChordId(name);
             Node <RESOURCE_TYPE> successor = (Node<RESOURCE_TYPE>) this.findSuccessor(id);
 
-            SealedPartition retrieved = successor.retrievePartition(partitionName);
+            SealedPartition retrieved = successor.retrievePartition(name);
             retrievedPartitions.add(retrieved);
-
-            partitionName = Cryptographer.hashString(partitionName);
         }
 
         return retrievedPartitions;
+    }
+
+    private List<Integer> pickRandomPartitions () {
+        int max = Cryptographer.MAX_PARTITIONS;
+        List<Integer> partitions = new ArrayList<Integer>(max);
+        while (partitions.size() != max) {
+            double index = Math.random() * max;
+            if (! partitions.contains((int) index)) {
+                partitions.add((int) index);
+            }
+        }
+        return partitions;
     }
 
     private SealedPartition retrievePartition(String name) {
@@ -219,14 +237,14 @@ public class Node<RESOURCE_TYPE extends Serializable> extends AbstractNode<RESOU
 
         ChordNode<People> n5 = new Node<>(32);
         n5.join(n1);
-        n1.leave();
+//        n1.leave();
 
 //        n1.prettyPrint();
-        n2.prettyPrint();
-        n3.prettyPrint();
-        n4.prettyPrint();
-        n5.prettyPrint();
-        n2.find("Karthik");
+//        n2.prettyPrint();
+//        n3.prettyPrint();
+//        n4.prettyPrint();
+//        n5.prettyPrint();
+        n1.find("Karthik");
 
 //        n1.remove("Karthik");
 
