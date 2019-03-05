@@ -237,16 +237,6 @@ public class Node<RESOURCE_TYPE extends Serializable> extends AbstractNode<RESOU
     }
 
     public static void main(String[] args) {
-
-
-//        int totalNodes = 11;
-//        int totalKeys = 13;
-//
-////        String resource = "192.168.0.0";
-//
-//        List<ChordNode<String>> nodes = ChordTester.generateRandomNodeList(totalNodes);
-//        List<Integer> keys = ChordTester.generateRandomKeyList(totalKeys);
-
         List<People> resource = new ArrayList<>();
         String[] firstName = new String[] {"Albert", "Robert", "Teresa", "Chen"};
         String[] lastName = new String[] {"Wu", "Gallagher", "Pena", "Qian"};
@@ -259,24 +249,41 @@ public class Node<RESOURCE_TYPE extends Serializable> extends AbstractNode<RESOU
             resource.add(person);
         }
 
-        System.out.println(resource.get(0).firstname);
+//        System.out.println(resource.get(0).firstname);
 
 
         List<Integer> usedKeys = new ArrayList<>();
 
-        List<AbstractNode<People>> randomNodeList = generateRandomNodeList(4);
+        List<AbstractNode<People>> randomNodeList = generateRandomNodeList(1000);
 
         ChordNode<People> n1 = randomNodeList.get(0);
         n1.join(null);
 
-        randomNodeList.forEach(System.out::println);
+//        randomNodeList.forEach(System.out::println);
 
         for(int i = 1; i < randomNodeList.size(); i++) {
             ChordNode<People> n = randomNodeList.get(i);
             n.join(n1);
         }
 
-        randomNodeList.forEach(n -> {n.prettyPrint();});
+//        randomNodeList.forEach(n -> {n.prettyPrint();});
+        int size = resource.size();
+//        ChordNode n = randomNodeList.get(0);
+        for(int i=0; i<size; i++){
+//            AbstractNode n = randomNodeList.get(i);
+            n1.insert(resource.get(i).firstname, resource.get(i));
+        }
+
+//        randomNodeList.get(0).find(resource.get(0).firstname);
+
+        long startTime = System.currentTimeMillis();
+        n1.find(resource.get(2).firstname);
+        long endTime = System.currentTimeMillis();
+        System.out.println("Total execution time: " + (endTime - startTime));
+
+
+
+
 
 
 
