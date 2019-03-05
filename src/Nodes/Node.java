@@ -207,52 +207,145 @@ public class Node<RESOURCE_TYPE extends Serializable> extends AbstractNode<RESOU
         return removedEntries;
     }
 
+    public static List<AbstractNode<People>> generateRandomNodeList(int numberOfNodes) {
+        List<Integer> ids = generateListOfIds();
+
+        List<AbstractNode<People>> nodeList = new ArrayList<>();
+
+        Random generator = new Random(0);
+
+        for (int i = 0; i < numberOfNodes; i++) {
+            int randomIndex = generator.nextInt(FingerTable.MAX_NODES - i);
+
+            int nodeId = ids.get(randomIndex);
+            ids.remove(randomIndex);
+
+            nodeList.add(new Node<>(nodeId));
+        }
+
+        System.out.println("Nodes that have been generated: " + nodeList);
+        return nodeList;
+    }
+
+    private static List<Integer> generateListOfIds() {
+        List<Integer> idList = new ArrayList<>();
+        for (int i = 0; i < FingerTable.MAX_NODES; i++) {
+            idList.add(i);
+        }
+
+        return idList;
+    }
+
     public static void main(String[] args) {
-        ChordNode<People> n1 = new Node<>(0);
-        ChordNode<People> n2 = new Node<>(64);
-        ChordNode<People> n3 = new Node<>(125);
-        ChordNode<People> n4 = new Node<>(200);
 
+
+//        int totalNodes = 11;
+//        int totalKeys = 13;
+//
+////        String resource = "192.168.0.0";
+//
+//        List<ChordNode<String>> nodes = ChordTester.generateRandomNodeList(totalNodes);
+//        List<Integer> keys = ChordTester.generateRandomKeyList(totalKeys);
+
+        List<People> resource = new ArrayList<>();
+        String[] firstName = new String[] {"Albert", "Robert", "Teresa", "Chen"};
+        String[] lastName = new String[] {"Wu", "Gallagher", "Pena", "Qian"};
+        String[] password = new String[] {"18dkj0w", "cbnsd098", "dsfjbw082gf", "sdujgbhwe"};
+
+        // Need to add a bunch of random people to array list
+
+        for(int i = 0; i < firstName.length; i++) {
+            People person = new People(firstName[i], lastName[i], password[i]);
+            resource.add(person);
+        }
+
+        System.out.println(resource.get(0).firstname);
+
+
+        List<Integer> usedKeys = new ArrayList<>();
+
+        List<AbstractNode<People>> randomNodeList = generateRandomNodeList(4);
+
+        ChordNode<People> n1 = randomNodeList.get(0);
         n1.join(null);
-        n2.join(n1);
-        n3.join(n2);
-        n4.join(n3);
 
-        People resource1 = new People("Karthik", "B", "1322");
-        People resource2 = new People("Alex", "W", "kcool");
-        People resource3 = new People("Roy", "S", "blahblah");
+        randomNodeList.forEach(System.out::println);
 
-        n1.insert("Karthik", resource1);
-        n2.insert("Alex", resource2);
-        n1.insert("Roy", resource3);
+        for(int i = 1; i < randomNodeList.size(); i++) {
+            ChordNode<People> n = randomNodeList.get(i);
+            n.join(n1);
+        }
 
-        People d = n1.find("Karthik");
-        System.out.println(d.firstname + " " + d.lastname + " " + d.password);
+        randomNodeList.forEach(n -> {n.prettyPrint();});
 
-        d = n1.find("Karthik");
-        System.out.println(d.firstname + " " + d.lastname + " " + d.password);
 
-        d = n1.find("Karthik");
-        System.out.println(d.firstname + " " + d.lastname + " " + d.password);
 
-        ChordNode<People> n5 = new Node<>(32);
-        n5.join(n1);
-//        n1.leave();
 
-//        n1.prettyPrint();
-//        n2.prettyPrint();
-//        n3.prettyPrint();
-//        n4.prettyPrint();
-//        n5.prettyPrint();
-        n1.find("Karthik");
 
-//        n1.remove("Karthik");
+//        public static List<Integer> generateRandomKeyList(int numberOfKeys) {
+//            List<Integer> ids = generateListOfIds();
+//            List<Integer> keyList = new ArrayList<>();
+//
+//            for (int i = 0; i < numberOfKeys; i++) {
+//                int randomIndex = generator.nextInt(FingerTable.MAX_NODES - i);
+//                int keyId = ids.get(randomIndex);
+//                ids.remove(randomIndex);
+//
+//                keyList.add(keyId);
+//            }
+//            System.out.println("Keys that have been generated: " + keyList);
+//            return keyList;
+//        }
 
-//        n1.prettyPrint();
-//        n2.prettyPrint();
-//        n3.prettyPrint();
-//        n4.prettyPrint();
-//        n5.prettyPrint();
+
+
+
+
+//        ChordNode<People> n1 = new Node<>(0);
+//        ChordNode<People> n2 = new Node<>(64);
+//        ChordNode<People> n3 = new Node<>(125);
+//        ChordNode<People> n4 = new Node<>(200);
+//
+//        n1.join(null);
+//        n2.join(n1);
+//        n3.join(n2);
+//        n4.join(n3);
+//
+//        People resource1 = new People("Karthik", "B", "1322");
+//        People resource2 = new People("Alex", "W", "kcool");
+//        People resource3 = new People("Roy", "S", "blahblah");
+//
+//        n1.insert("Karthik", resource1);
+//        n2.insert("Alex", resource2);
+//        n1.insert("Roy", resource3);
+//
+//        People d = n1.find("Karthik");
+//        System.out.println(d.firstname + " " + d.lastname + " " + d.password);
+//
+//        d = n1.find("Karthik");
+//        System.out.println(d.firstname + " " + d.lastname + " " + d.password);
+//
+//        d = n1.find("Karthik");
+//        System.out.println(d.firstname + " " + d.lastname + " " + d.password);
+//
+//        ChordNode<People> n5 = new Node<>(32);
+//        n5.join(n1);
+////        n1.leave();
+//
+////        n1.prettyPrint();
+////        n2.prettyPrint();
+////        n3.prettyPrint();
+////        n4.prettyPrint();
+////        n5.prettyPrint();
+//        n1.find("Karthik");
+//
+////        n1.remove("Karthik");
+//
+////        n1.prettyPrint();
+////        n2.prettyPrint();
+////        n3.prettyPrint();
+////        n4.prettyPrint();
+////        n5.prettyPrint();
     }
 
 }
