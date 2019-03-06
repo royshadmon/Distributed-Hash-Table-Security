@@ -237,67 +237,9 @@ public class Node<RESOURCE_TYPE extends Serializable> extends AbstractNode<RESOU
     }
 
     public static void main(String[] args) {
-        double index = 2;
-        double count = 0;
-        long[] time = new long[17];
-        while (Math.pow(index, count) < 131072) {
-            List<People> resource = new ArrayList<>();
-            String[] firstName = new String[] {"Albert", "Robert", "Teresa", "Chen"};
-            String[] lastName = new String[] {"Wu", "Gallagher", "Pena", "Qian"};
-            String[] password = new String[] {"18dkj0w", "cbnsd098", "dsfjbw082gf", "sdujgbhwe"};
 
-            // Need to add a bunch of random people to array list
-
-            for(int i = 0; i < firstName.length; i++) {
-                People person = new People(firstName[i], lastName[i], password[i]);
-                resource.add(person);
-            }
-
-//        System.out.println(resource.get(0).firstname);
-
-
-            List<Integer> usedKeys = new ArrayList<>();
-            double num = Math.pow(index,count);
-
-            int num2 = (int) num;
-            System.out.println("NUM " + num2);
-            List<AbstractNode<People>> randomNodeList = generateRandomNodeList(num2);
-
-            ChordNode<People> n1 = randomNodeList.get(0);
-            n1.join(null);
-
-//        randomNodeList.forEach(System.out::println);
-
-            for(int i = 1; i < randomNodeList.size(); i++) {
-                ChordNode<People> n = randomNodeList.get(i);
-                n.join(n1);
-            }
-
-//        randomNodeList.forEach(n -> {n.prettyPrint();});
-            int size = resource.size();
-//        ChordNode n = randomNodeList.get(0);
-            for(int i=0; i<size; i++){
-//            AbstractNode n = randomNodeList.get(i);
-                n1.insert(resource.get(i).firstname, resource.get(i));
-            }
-
-//        randomNodeList.get(0).find(resource.get(0).firstname);
-
-            long startTime = System.nanoTime();
-            n1.find(resource.get(2).firstname);
-            long endTime = System.nanoTime();
-            time[(int)count] = endTime - startTime;
-            count+=1;
-            index = Math.pow(index, count);
-        }
-
-
-        System.out.println(time.length);
-        for (int i = 0; i< time.length; i++) {
-            System.out.println((int) Math.pow(2, i) + " " + time[i]);
-        }
-
-
+        testLookUpTime();
+        // we need to write a test for resource balance;
 
 
 
@@ -370,6 +312,64 @@ public class Node<RESOURCE_TYPE extends Serializable> extends AbstractNode<RESOU
 ////        n3.prettyPrint();
 ////        n4.prettyPrint();
 ////        n5.prettyPrint();
+    }
+
+
+    private static void testLookUpTime() {
+        int index = 2;
+        int count = 0;
+        long[] time = new long[17];
+        while (Math.pow(index, count) < Math.pow(2, FingerTable.MAX_ENTRIES)) {
+            List<People> resource = new ArrayList<>();
+            String[] firstName = new String[] {"Albert", "Robert", "Teresa", "Chen"};
+            String[] lastName = new String[] {"Wu", "Gallagher", "Pena", "Qian"};
+            String[] password = new String[] {"18dkj0w", "cbnsd098", "dsfjbw082gf", "sdujgbhwe"};
+
+            // Need to add a bunch of random people to array list
+
+            for(int i = 0; i < firstName.length; i++) {
+                People person = new People(firstName[i], lastName[i], password[i]);
+                resource.add(person);
+            }
+
+
+            double num = Math.pow(index,count);
+
+            int num2 = (int) num;
+            System.out.println("NUM " + num2);
+            List<AbstractNode<People>> randomNodeList = generateRandomNodeList(num2);
+
+            ChordNode<People> n1 = randomNodeList.get(0);
+            n1.join(null);
+
+            for(int i = 1; i < randomNodeList.size(); i++) {
+                ChordNode<People> n = randomNodeList.get(i);
+                n.join(n1);
+            }
+
+
+            int size = resource.size();
+
+            for(int i=0; i<size; i++){
+
+                n1.insert(resource.get(i).firstname, resource.get(i));
+            }
+
+            long startTime = System.nanoTime();
+            n1.find(resource.get(2).firstname);
+            long endTime = System.nanoTime();
+            time[count] = endTime - startTime;
+            count+=1;
+            System.out.println("COUNT: " + count);
+            System.out.println("INDEX: " + index);
+        }
+
+
+
+        for (int i = 0; i< time.length; i++) {
+            System.out.println((int) Math.pow(2, i) + " " + time[i]);
+        }
+
     }
 
 }
