@@ -287,7 +287,7 @@ public abstract class AbstractNode<RESOURCE_TYPE extends Serializable> implement
      /**
      * Emulates C++ Unsigned 8 bit Integer.
      */
-    private int hash(int number) { return number & 0xff; }
+    private int hash(int number) { return number; }
 
 
     /**
