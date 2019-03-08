@@ -319,7 +319,8 @@ public class Node<RESOURCE_TYPE extends Serializable> extends AbstractNode<RESOU
     private static void testLookUpTime() {
         int index = 2;
         int count = 0;
-        long[] time = new long[17];
+//        long[] time = new long[17];
+        List<Long> time = new ArrayList<>();
         while (Math.pow(index, count) <= FingerTable.MAX_NODES) {
             List<People> resource = new ArrayList<>();
             String[] firstName = new String[] {"Albert", "Robert", "Teresa", "Chen"};
@@ -358,7 +359,7 @@ public class Node<RESOURCE_TYPE extends Serializable> extends AbstractNode<RESOU
             long startTime = System.nanoTime();
             n1.find(resource.get(2).firstname);
             long endTime = System.nanoTime();
-            time[count] = endTime - startTime;
+            time.add(endTime - startTime);
             count+=1;
             System.out.println("COUNT: " + count);
             System.out.println("INDEX: " + index);
@@ -366,8 +367,8 @@ public class Node<RESOURCE_TYPE extends Serializable> extends AbstractNode<RESOU
 
 
 
-        for (int i = 0; i< time.length; i++) {
-            System.out.println((int) Math.pow(2, i) + " " + time[i]);
+        for (int i = 0; i < time.size(); i++) {
+            System.out.println((int) Math.pow(2, i) + " " + time.get(i));
         }
 
     }
