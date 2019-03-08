@@ -69,9 +69,7 @@ public class Cryptographer<RESOURCE_TYPE extends Serializable> {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
 
             byte[] messageDigest = md.digest(input);
-
             BigInteger no = new BigInteger(1, messageDigest);
-
             StringBuilder hashtext = new StringBuilder(no.toString(16));
 
             while (hashtext.length() < 32) {
