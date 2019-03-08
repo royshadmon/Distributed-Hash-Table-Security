@@ -238,9 +238,9 @@ public class Node<RESOURCE_TYPE extends Serializable> extends AbstractNode<RESOU
 
     public static void main(String[] args) {
 
-//        testLookUpTime();
+        testLookUpTime();
         // we need to write a test for resource balance;
-        testLoadBalance();
+//        testLoadBalance();
 
 //        Node.generateListOfIds().forEach(System.out::println);
 
@@ -320,7 +320,7 @@ public class Node<RESOURCE_TYPE extends Serializable> extends AbstractNode<RESOU
         int index = 2;
         int count = 0;
         long[] time = new long[17];
-        while (Math.pow(index, count) < FingerTable.MAX_NODES) {
+        while (Math.pow(index, count) <= FingerTable.MAX_NODES) {
             List<People> resource = new ArrayList<>();
             String[] firstName = new String[] {"Albert", "Robert", "Teresa", "Chen"};
             String[] lastName = new String[] {"Wu", "Gallagher", "Pena", "Qian"};
@@ -385,7 +385,7 @@ public class Node<RESOURCE_TYPE extends Serializable> extends AbstractNode<RESOU
             People person = new People(firstName[i], lastName[i], password[i]);
             resource.add(person);
         }
-        while (Math.pow(index, count) < FingerTable.MAX_NODES) {
+        while (Math.pow(index, count) <= FingerTable.MAX_NODES) {
 
 //            String[] lastName = new String[] {"Wu", "Gallagher", "Pena", "Qian", "Shadmon", "Rogers", "Brown", "B", "Finland", "Russia", "Latvia", "Lithuania", "Poland", "Anderson", "Ashwoon", "Aikin", "Bateman", "Bongard", "Bowers", "Boyd", "Cannon", "Cast", "Deitz", "Dewalt", "Ebner", "Frick", "Hancock", "Haworth", "Hesch", "Hoffman", "Kassing", "Knutson", "Lawless", "Lawicki", "Mccord", "McCormack", "Miller", "Myers", "Nugent", "Ortiz", "Orwig", "Ory", "Paiser", "Pak", "Pettigrew", "Quinn", "Quizoz", "Ramachandran", "Resnick", "Sagar", "Schickowski", "Schiebel", "Sellon", "Severson", "Shaffer", "Solberg", "Soloman", "Sonderling", "Soukup", "Soulis", "Stahl", "Sweeney", "Tandy", "Trebil", "Trusela", "Trussel", "Turco", "Uddin", "Uflan", "Ulrich", "Upson", "Vader", "Vail", "Valente", "Van Zandt", "Vanderpoel", "Ventotla", "Vogal", "Wagle", "Wagner", "Wakefield", "Weinstein", "Weiss", "Woo", "Yang", "Yates", "Yocum", "Zeaser", "Zeller", "Ziegler", "Bauer", "Baxster", "Casal", "Cataldi", "Caswell", "Celedon", "Chambers", "Chapman", "Christensen", "Darnell", "Davidson", "Davis", "DeLorenzo", "Dinkins", "Doran", "Dugelman", "Dugan", "Duffman", "Eastman", "Ferro", "Ferry", "Fletcher", "Fietzer", "Hylan", "Hydinger", "Illingsworth", "Ingram", "Irwin", "Jagtap", "Jenson", "Johnson", "Johnsen", "Jones", "Jurgenson", "Kalleg", "Kaskel", "Keller", "Leisinger", "LePage", "Lewis", "Linde", "Lulloff", "Maki", "Martin", "McGinnis", "Mills", "Moody", "Moore", "Napier", "Nelson", "Norquist", "Nuttle", "Olson", "Ostrander", "Reamer", "Reardon", "Reyes", "Rice", "Ripka", "Roberts", "Rogers", "Root", "Sandstrom", "Sawyer", "Schlicht", "Schmitt", "Schwager", "Schutz", "Schuster", "Tapia", "Thompson", "Tiernan", "Tisler", "Adam", "Alex", "Aaron", "Ben", "Carl", "Dan", "David", "Edward", "Fred", "Frank", "George", "Hal", "Hank", "Ike", "John", "Jack", "Joe", "Larry", "Monte", "Matthew", "Mark", "Nathan", "Otto", "Paul", "Peter", "Roger", "Roger", "Steve", "Thomas", "Tim", "Ty", "Victor", "Walter"};
 //            String[] password = new String[] {"18dkj0w", "cbnsd098", "dsfjbw082gf", "sdujgbhwe", "13213253", "royroy", "ri1232", "ja2342", "31234", "adfadfeE4", "Er234", "2342dfs", "fsdaf234"};
