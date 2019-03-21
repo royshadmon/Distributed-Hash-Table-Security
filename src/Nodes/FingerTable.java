@@ -7,7 +7,7 @@ public class FingerTable<RESOURCE_TYPE extends Serializable> implements Serializ
 
     private int hostNodeId;
 
-    public static final int MAX_ENTRIES = 8;
+    public static final int MAX_ENTRIES = 17;
 
     public static final int MAX_NODES = (int) (Math.pow(2, MAX_ENTRIES));
     private LinkedHashMap<Integer, AbstractNode<RESOURCE_TYPE>> fingerTable = new LinkedHashMap<>();
